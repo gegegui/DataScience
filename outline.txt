@@ -1,0 +1,7 @@
+Project: Option 4
+
+Perform an analysis of the statistical analyses in all published PLoS papers. What are the most common techniques? How do they vary by field? Are there any trends over the last 10-15 years?
+
+To-do list:
+
+- 
