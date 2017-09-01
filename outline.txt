@@ -4,4 +4,10 @@ Perform an analysis of the statistical analyses in all published PLoS papers. Wh
 
 To-do list:
 
-- 
+- Follow the documentation from PLOS API (http://api.plos.org/solr/examples/) to download statistics-related paper.
+
+- Change pdf files to txt files, extract key words and publishing time from each paper.
+
+- List common statistics techniques using several textbooks. (or from all key words)
+
+- Read paper: “Topics over Time: A Non-Markov Continuous-Time Model of Topical Trends” and try to extend the LDA model in this project
