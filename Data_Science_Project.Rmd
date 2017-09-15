@@ -23,11 +23,12 @@ library("rplos")
 id = searchplos(q="statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
 
 
+plosabstract(q = 'regression', fl='id,title', limit = 5)
+plosabstract(q = 'machine learning', fl='id,title', limit = 5)
+plosabstract(q = 'neural network', fl='id,title', limit = 5)
 
 
 
-
-
-Visualize word use across articles
+# Visualize word use across articles
 plosword(list('monkey','Helianthus','sunflower','protein','whale'), vis = 'TRUE')
 ```
