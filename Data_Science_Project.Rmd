@@ -27,26 +27,13 @@ id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:f
 
 To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman. 
 
-linear regression 
-Lasso
-ridge regression
-linear discriminant analysis (LDA)
-bootstrap
-maximum likelihood
-EM algorithm
-MCMC
-neural network
-support vector machine (SVM)
-clustering
-principal component
-independent component
-random forest
-graphical model
-
+```{r}
+dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis (LDA)","bootstrap","maximum likelihood","EM algorithm","MCMC","neural network","support vector machine (SVM)","clustering","principal component","independent component","random forest","graphical model")
+```
 
 ```{r}
 # create dictionary and return abstract
-a = plosabstract(q = 'regression', fl='id,title', limit = 5)
+plosabstract(q = 'regression', fl='id,title', limit = 5)
 plosabstract(q = 'machine learning', fl='id,title', limit = 5)
 plosabstract(q = 'neural network', fl='id,title', limit = 5)
 ```
@@ -62,11 +49,14 @@ highbrow(out)
 plosword(list('regression', 'neural network'), vis = 'TRUE')
 
 # plot through time
-pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 300)
+pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 59)
 ```
 
 
 # Related paper
 
 Topics over Time: A Non-Markov Continuous-Time Model of Topical Trends
+
+Use graphical model and Gibbs sampling to find the topic trend.
+
 
