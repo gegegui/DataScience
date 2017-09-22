@@ -7,28 +7,66 @@ output: pdf_document
 
 # Introduction:
 
-PLOS (Public Library of Science) is a nonprofit Open Access publisher, innovator and advocacy organization with a mission to accelerate progress in science and medicine by leading a transformation in research communication. The data analysis project is to find out the most common statistical techniques in all published PLOS papers and the trends over the last 10-15 years.
+PLoS (Public Library of Science) is a nonprofit Open Access publisher, innovator and advocacy organization with a mission to accelerate progress in science and medicine by leading a transformation in research communication. The data analysis project is to find out the most common statistical techniques in all published PLoS papers and the trends over the last 10-15 years.
 
 # Data:
 
-Follow the documentation from PLOS API website <http://api.plos.org/solr/examples/> to download statistics-related paper. Change pdf files to txt files, extract key words and publishing time from each paper. List common statistics techniques using several textbooks. (or from all key words)
+Follow the documentation from PLoS API website <http://api.plos.org/solr/examples/> to download statistics-related paper. By indicating "statistic" in abstract part, the results show that there are 12329 papers. 
+
+```{r}
+library("rplos")
+# Get only full article DOIs
+id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
+```
+
+Specify the "limit" to be 12329, then the data part for "id" contains the ID and publication date of the paper of our interest.
+
+```{r}
+id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0, limit = id$meta[1, 1])
+```
+
+To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman. 
+
+linear regression 
+Lasso
+ridge regression
+linear discriminant analysis (LDA)
+bootstrap
+maximum likelihood
+EM algorithm
+MCMC
+neural network
+support vector machine (SVM)
+clustering
+principal component
+independent component
+random forest
+graphical model
+
+
+```{r}
+# create dictionary and return abstract
+a = plosabstract(q = 'regression', fl='id,title', limit = 5)
+plosabstract(q = 'machine learning', fl='id,title', limit = 5)
+plosabstract(q = 'neural network', fl='id,title', limit = 5)
+```
+
+```{r}
+# select paper with key words in method part
+out <- highplos(q='regression', hl.fl = 'Materials and Methods', rows=130)
+highbrow(out)
+```
+
+```{r}
+# Visualize word use across articles
+plosword(list('regression', 'neural network'), vis = 'TRUE')
+
+# plot through time
+pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 300)
+```
+
 
 # Related paper
 
 Topics over Time: A Non-Markov Continuous-Time Model of Topical Trends
 
-```{r}
-library("rplos")
-# Get only full article DOIs
-id = searchplos(q="statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
-
-
-plosabstract(q = 'regression', fl='id,title', limit = 5)
-plosabstract(q = 'machine learning', fl='id,title', limit = 5)
-plosabstract(q = 'neural network', fl='id,title', limit = 5)
-
-
-
-# Visualize word use across articles
-plosword(list('monkey','Helianthus','sunflower','protein','whale'), vis = 'TRUE')
-```
