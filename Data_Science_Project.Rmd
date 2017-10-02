@@ -2,21 +2,26 @@
 title: "Data Science Project"
 author: "Gege Gui"
 date: "9/11/2017"
-output: pdf_document
+output:
+  pdf_document:
+    latex_engine: xelatex
 ---
+\fontsize{12}{20}
+\selectfont
 
-# Introduction:
+
+Introduction:
 
 PLoS (Public Library of Science) is a nonprofit Open Access publisher, innovator and advocacy organization with a mission to accelerate progress in science and medicine by leading a transformation in research communication. The data analysis project is to find out the most common statistical techniques in all published PLoS papers and the trends over the last 10-15 years.
 
-# Data:
+Data:
 
 Follow the documentation from PLoS API website <http://api.plos.org/solr/examples/> to download statistics-related paper. By indicating "statistic" in abstract part, the results show that there are 12329 papers. 
 
 bulk downloading
 ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/
 
-```{r}
+```{r, eval=FALSE}
 library("rplos")
 # Get only full article DOIs
 id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
@@ -24,30 +29,30 @@ id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:f
 
 Specify the "limit" to be 12329, then the data part for "id" contains the ID and publication date of the paper of our interest.
 
-```{r}
+```{r, eval=FALSE}
 # id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0, limit = id$meta[1, 1])
 ```
 
 To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman. 
 
-```{r}
+```{r, eval=FALSE}
 dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis (LDA)","bootstrap","maximum likelihood","EM algorithm","MCMC","neural network","support vector machine (SVM)","clustering","principal component","independent component","random forest","graphical model")
 ```
 
-```{r}
+```{r, eval=FALSE}
 # create dictionary and return abstract
 plosabstract(q = 'regression', fl='id,title', limit = 5)
 plosabstract(q = 'machine learning', fl='id,title', limit = 5)
 plosabstract(q = 'neural network', fl='id,title', limit = 5)
 ```
 
-```{r}
+```{r, eval=FALSE}
 # select paper with key words in method part
 out <- highplos(q='regression', hl.fl = 'Materials and Methods', rows=130)
 highbrow(out)
 ```
 
-```{r}
+```{r, eval=FALSE}
 # Visualize word use across articles
 plosword(list('regression', 'neural network'), vis = 'TRUE')
 
@@ -69,7 +74,23 @@ Download the Simply Statistics Github repo from here: https://github.com/simplys
 
 Read in the text files from the _posts subdirectory of the resulting set of files. You will want to use the tm package for this. The functions you will need are "DirSource" and "Vcorpus".
 
-```{r}
+Now look at the meta data for the 926th document using the "meta" command
+
+Now use the "tidy" command to tidy up the documents and then unnest the tokens.
+
+Remove the stopwords
+
+Calculate the most frequent words using group_by, count, and arrange
+
+Only keep words in this list of English words: https://github.com/dwyl/english-words/blob/master/words.txt.zip and remove the 20 most frequent words.
+
+Cast the tidy obect into a DocumentTermMatrix object.
+
+Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
+
+Make a wordcloud of the top 20 words from each of these models. Can you "label" any of them.
+
+```{r, eval=FALSE}
 library(tm)
 # file = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/simplystats.github.io-master/_posts") %>% 
 # # reut21578 <- DirSource(system.file("texts", "crude", package = "tm"))
@@ -87,23 +108,7 @@ library(tm)
 
 ```
 
-Now look at the meta data for the 926th document using the "meta" command
-
-Now use the "tidy" command to tidy up the documents and then unnest the tokens.
-
-Remove the stopwords
-
-Calculate the most frequent words using group_by, count, and arrange
-
-Only keep words in this list of English words: https://github.com/dwyl/english-words/blob/master/words.txt.zip and remove the 20 most frequent words.
-
-Cast the tidy obect into a DocumentTermMatrix object.
-
-Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
-
-Make a wordcloud of the top 20 words from each of these models. Can you "label" any of them.
-
-```{r}
+```{r, eval=FALSE}
 library("tm")
 dsource = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/Biostatistics")
 file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
@@ -124,7 +129,7 @@ file_word = file_words[file_words$word %in% dic, ]
 
 see how the appearance of a word changes over time:
 
-```{r}
+```{r, eval=FALSE}
 library("stringr")
 library("tidyr")
 file_word$Year = as.double(str_split(file_word$id, pattern = fixed("_"), simplify = T)[,2])
@@ -140,7 +145,7 @@ file_freq = file_word[,colnames(file_word) %in% c("word", "Year")] %>%
 
 For example, we can use the broom package to perform logistic regression on each word.
 
-```{r}
+```{r, eval=FALSE}
 f_freq = file_freq[file_freq$percent > 0, ]
 models = f_freq %>%
   group_by(word) %>%
@@ -165,7 +170,7 @@ models %>%
 
 We can also use the ggplot2 package to display the top 6 terms that have changed in frequency over time.
 
-```{r, warning=F, echo=FALSE}
+```{r, warning=F, echo=FALSE, eval=FALSE}
 library(scales)
 models %>%
   top_n(6, abs(estimate)) %>%
@@ -178,15 +183,7 @@ models %>%
   ylab("Frequency of word in speech")
 ```
 
-Calculate the most frequent words using group_by, count, and arrange
-
-Cast the tidy object into a DocumentTermMatrix object.
-
-Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
-
-Make a wordcloud of the top 20 words from each of these models. Can you "label" any of them.
-
-```{r}
+```{r, eval=FALSE}
 f_word = file_word[, colnames(file_word) %in% c("datetimestamp", "id","word","Year")]
 filefreq = f_word %>%
   group_by(id) %>%
@@ -199,3 +196,44 @@ library("topicmodels")
 lda = LDA(t_file, 30)
 lda_inf = posterior(lda)
 ```
+
+
+\pagebreak
+
+# Report
+
+## Introduction:
+
+PLoS (Public Library of Science) is a nonprofit Open Access publisher, innovator and advocacy organization with a mission to accelerate progress in science and medicine by leading a transformation in research communication. The data analysis project is to find out the most common statistical techniques in all published PLoS papers and the trends over the last 10-15 years. 
+
+## Data Preparation
+
+The website has an API tool for finding related articles. ALM API can print out information about articles we are interesed in, such as author, publication date, abstract, etc. There is an R package "rplos", which contains functions that can be used easily to look at article matrics.
+
+Besides the "rplos" R package for summary statistics, we want to conduct text and data mining on our own by obtaining entire corpus. The raw data are from "Documentation: Text and Data Mining" page.  As bulk downloading of article HTML/PDF/XML is discouraged, we use the "PMC OA Bulk Download FTP" to obtain research articles from multiple journals. The files are organized by topics alphabetically. We choose the folder named as "Biostatistics" as the one for model development. There are 52 documents in total. We use "LDA" (Latent Dirichlet Allocation) in R package "topicmodels" together with text mining commands in R package "tm". 
+
+## Method
+
+We use "rplos" to do some exploritory data analysis. To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman, as a reference. The words from the dictionary are counted and the barplots below show the usage frequency of each word.
+
+```{r, echo = FALSE}
+library("rplos")
+dic = list('linear regression', 'Lasso', 'ridge regression', 'bootstrap', 'maximum likelihood', 'EM algorithm', 'MCMC', 'neural network', 'SVM', 'clustering', 'principal component', 'independent component', 'random forest', 'graphical model')
+length(dic)
+a = plosword(dic[1:7], vis = 'TRUE')
+b = plosword(dic[8:14], vis = 'TRUE')
+par(mfrow=c(2,1))
+a$plot
+# plot through time
+# pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 59)
+```
+
+```{r, echo = FALSE, fig_width = 8, fig_height = 4}
+b$plot
+```
+
+Latent Dirichlet Allocation (LDA) is the common algorithm used for distinguishing topics by text mining. R has several packages based on NLP to solve this kind of problem. 
+
+The articles from PLoS "Biostatistics" folder are text files. After reading the file using "DirSource" and "Vcorpus" from "tm" package, we tidy the data using "tidy" command from package "tidyr", remove the stopwords and punctuations to create a corpus. Only those words that are included in this list of English words: https://github.com/dwyl/english-words/blob/master/words.txt.zip, remain in the corpus. After calculating out the frequency for each word in every document, we implement LDA to find out possible topics. The initial value of topics are set to be 3 - 10. We need to find an appropriate method to determine how many topics should be left in the model and determine the label.
+
+Another important part about this project is to find out the topics change over time. We first explore the word change over time, then use those words to see if there are links to models. An alternative way is to create a new variable: year, and group the word by year to see the trend. We can add "date" as a variable in LDA model. The next step would be to modify the Gibbs sampling procedure when considering time as an updated variable across sampling.
