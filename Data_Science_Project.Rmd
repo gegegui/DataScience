@@ -13,6 +13,9 @@ PLoS (Public Library of Science) is a nonprofit Open Access publisher, innovator
 
 Follow the documentation from PLoS API website <http://api.plos.org/solr/examples/> to download statistics-related paper. By indicating "statistic" in abstract part, the results show that there are 12329 papers. 
 
+bulk downloading
+ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/
+
 ```{r}
 library("rplos")
 # Get only full article DOIs
@@ -22,7 +25,7 @@ id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:f
 Specify the "limit" to be 12329, then the data part for "id" contains the ID and publication date of the paper of our interest.
 
 ```{r}
-id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0, limit = id$meta[1, 1])
+# id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0, limit = id$meta[1, 1])
 ```
 
 To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman. 
@@ -60,3 +63,139 @@ Topics over Time: A Non-Markov Continuous-Time Model of Topical Trends
 Use graphical model and Gibbs sampling to find the topic trend.
 
 
+Topic model
+
+Download the Simply Statistics Github repo from here: https://github.com/simplystats/simplystats.github.io
+
+Read in the text files from the _posts subdirectory of the resulting set of files. You will want to use the tm package for this. The functions you will need are "DirSource" and "Vcorpus".
+
+```{r}
+library(tm)
+# file = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/simplystats.github.io-master/_posts") %>% 
+# # reut21578 <- DirSource(system.file("texts", "crude", package = "tm"))
+#   VCorpus() %>%
+#   DocumentTermMatrix(control = list(removePunctuation = TRUE,
+#                                     removeNumbers = TRUE,
+#                                     stopwords = FALSE))
+# 
+# meta(file[[926]])
+# inspect(file[[926]])
+# 
+# library("broom")
+# tidy(file[[4]])
+# tidy(as.data.frame(as.matrix(file)))
+
+```
+
+Now look at the meta data for the 926th document using the "meta" command
+
+Now use the "tidy" command to tidy up the documents and then unnest the tokens.
+
+Remove the stopwords
+
+Calculate the most frequent words using group_by, count, and arrange
+
+Only keep words in this list of English words: https://github.com/dwyl/english-words/blob/master/words.txt.zip and remove the 20 most frequent words.
+
+Cast the tidy obect into a DocumentTermMatrix object.
+
+Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
+
+Make a wordcloud of the top 20 words from each of these models. Can you "label" any of them.
+
+```{r}
+library("tm")
+dsource = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/Biostatistics")
+file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
+# %>% DocumentTermMatrix(control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = TRUE))
+
+library(dplyr)
+library(tidytext)
+tidyfile = tidy(file)
+# tidyfile = tidy(as.data.frame(as.matrix(file)))
+
+dic = scan("/Users/gege/Dropbox/graduate/DataScience/project/Data/words.txt", character(), quote = "")
+
+file_words = tidyfile %>%
+  unnest_tokens(word, text) %>%
+  anti_join(stop_words) 
+file_word = file_words[file_words$word %in% dic, ]
+```
+
+see how the appearance of a word changes over time:
+
+```{r}
+library("stringr")
+library("tidyr")
+file_word$Year = as.double(str_split(file_word$id, pattern = fixed("_"), simplify = T)[,2])
+file_freq = file_word[,colnames(file_word) %in% c("word", "Year")] %>%
+  count(Year, word) %>%
+  ungroup() %>%
+  complete(Year, word, fill = list(n = 0)) %>%
+  group_by(Year) %>%
+  mutate(year_total = sum(n),
+         percent = n / year_total) %>%
+  ungroup()
+```
+
+For example, we can use the broom package to perform logistic regression on each word.
+
+```{r}
+f_freq = file_freq[file_freq$percent > 0, ]
+models = f_freq %>%
+  group_by(word) %>%
+  filter(sum(n) > 50) %>%
+  do(tidy(glm(cbind(n, year_total - n) ~ Year, .,
+              family = "binomial"))) %>%
+  ungroup() %>%
+  filter(term == "Year")
+
+library(ggplot2)
+
+models %>%
+  mutate(adjusted.p.value = p.adjust(p.value)) %>%
+  ggplot(aes(estimate, adjusted.p.value)) +
+  geom_point() +
+  scale_y_log10() +
+  geom_text(aes(label = word), vjust = 1, hjust = 1,
+            check_overlap = TRUE) +
+  xlab("Estimated change over time") +
+  ylab("Adjusted p-value")
+```
+
+We can also use the ggplot2 package to display the top 6 terms that have changed in frequency over time.
+
+```{r, warning=F, echo=FALSE}
+library(scales)
+models %>%
+  top_n(6, abs(estimate)) %>%
+  inner_join(f_freq) %>%
+  ggplot(aes(Year, percent)) +
+  geom_point() +
+  geom_smooth() +
+  facet_wrap(~ word) +
+  scale_y_continuous(labels = percent_format()) +
+  ylab("Frequency of word in speech")
+```
+
+Calculate the most frequent words using group_by, count, and arrange
+
+Cast the tidy object into a DocumentTermMatrix object.
+
+Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
+
+Make a wordcloud of the top 20 words from each of these models. Can you "label" any of them.
+
+```{r}
+f_word = file_word[, colnames(file_word) %in% c("datetimestamp", "id","word","Year")]
+filefreq = f_word %>%
+  group_by(id) %>%
+  count(word) %>%
+  filter(n > 5)
+
+# docu = DocumentTermMatrix(tidy(as.data.frame(as.matrix(f_word))))
+t_file = DocumentTermMatrix(file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = FALSE))
+library("topicmodels")
+lda = LDA(t_file, 30)
+lda_inf = posterior(lda)
+```

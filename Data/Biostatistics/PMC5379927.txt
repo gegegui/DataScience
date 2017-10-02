@@ -1,0 +1,1567 @@
+
+==== Front
+BiostatisticsBiostatisticsbiostsBiostatistics (Oxford, England)1465-46441468-4357Oxford University Press 10.1093/biostatistics/kxw051kxw051ArticlesIncorporating social contact data in spatio-temporal models for infectious disease spread Meyer Sebastian Institute of Medical Informatics, Biometry, and Epidemiology, Friedrich-Alexander-Universität Erlangen-Nürnberg,Waldstraße 6, DE-91054 Erlangen, Germanyseb.meyer@fau.deHeld Leonhard Epidemiology, Biostatistics and Prevention Institute, University of Zurich, Hirschengraben 84, CH-8001 Zürich, Switzerland* To whom correspondence should be addressed.4 2017 24 12 2016 24 12 2016 18 2 338 351 23 11 2015 30 9 2016 6 11 2016 © The Author 2016. Published by Oxford University Press.2016This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.Summary
+Routine public health surveillance of notifiable infectious diseases gives rise to weekly counts of reported cases—possibly stratified by region and/or age group. We investigate how an age-structured social contact matrix can be incorporated into a spatio-temporal endemic–epidemic model for infectious disease counts. To illustrate the approach, we analyze the spread of norovirus gastroenteritis over six age groups within the 12 districts of Berlin, 2011–2015, using contact data from the POLYMOD study. The proposed age-structured model outperforms alternative scenarios with homogeneous or no mixing between age groups. An extended contact model suggests a power transformation of the survey-based contact matrix toward more within-group transmission.
+
+Age-structured contact matrixAreal count time seriesEndemic-epidemic modelingInfectious disease epidemiologyNorovirus gastroenteritisNorwalk virusSpatio-temporal surveillance dataSwiss National Science Foundation#137919
+==== Body
+1. INTRODUCTION
+The social phenomenon of “like seeks like” produces characteristic contact patterns between subgroups of a population. If suitably quantified, such social mixing behavior can inform models for infectious disease spread (Read and others, 2012). One of the largest social contact surveys to date was conducted as part of the EU-funded POLYMOD project, recording conversational contacts of 7 290 individuals in eight European countries (Mossong and others, 2008). Contact patterns were found to be similar across the different countries and highly assortative with respect to age, especially for school children and young adults.
+
+The basic idea behind the combination of social contact data with epidemic models has been termed the “social contact hypothesis” (Wallinga and others, 2006): The age-specific numbers of potentially infectious contacts are proportional to age-specific numbers of social contacts. For instance, for pathogens transmitted via respiratory droplets, face-to-face conversation and/or physical contact are frequently used as proxy measures for exposure. Many studies have now made use of the POLYMOD contact data (Rohani and others, 2010; Goeyvaerts and others, 2010, 2015; Birrell and others, 2011; Baguelin and others, 2013), but none of them accounts for the spatial characteristics of disease spread. The distance of social contacts from the home location of each participant has only recently been investigated by Read and others (2014). Their finding that “most were within a kilometer of the participant’s home, while some occurred further than 500 km away” reflects the power-law distance decay of social interaction as determined by human travel behavior (Brockmann and others, 2006). Meyer and Held (2014) found such a power law to translate to the spatial spread of infectious diseases.
+
+The purpose of this paper is to combine the social and spatial determinants of infectious disease spread in a multivariate time-series model for public health surveillance data. For notifiable diseases, such data are routinely available as weekly counts of reported cases by administrative district and further stratified by age group or gender. Social contact matrices reflect the amount of mixing between these strata. Our focus is on age-structured models, but the methods equivalently apply to other or multiple strata. We investigate if a (possibly adjusted) contact matrix captures disease spread better than simple assumptions of homogeneous or no mixing between the subgroups. The approach also allows us to estimate how much disease incidence in each group can be linked to previous cases in their own and in other groups—while adjusting for the spatial pattern of disease spread.
+
+This paper is organized as follows. Section 2 introduces our case study on norovirus gastroenteritis, including contact data from the POLYMOD study. Section 3 outlines the spatio-temporal modeling framework and describes how to incorporate additional stratification with a contact matrix. Section 4 shows results of the case study and Section 5 concludes the paper with a discussion. The supplementary material contains additional figures, an animation of the data, as well as the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{R}$\end{document} source package \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{hhh4contacts}$\end{document} with the data and code to reproduce the presented analysis (run \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{demo}$\end{document} (“\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{hhh4contacts}$\end{document}”) after installing and loading the package).
+
+2. CASE STUDY: NOROVIRUS GASTROENTERITIS IN BERLIN, 2011–2015
+Most of the aforementioned studies relate contact patterns to the spread of influenza, whereas here we investigate the occurrence of norovirus-associated acute gastroenteritis. Both diseases are highly infectious, have a similar temporal pattern, and similar mortality in elderly persons (van Asten and others, 2012). However, in contrast to influenza, vaccines against noroviruses have yet to be developed (Pringle and others, 2015). Absence of vaccination simplifies the analysis of infectious disease occurrence since vaccination coverage—potentially varying across age groups, regions and over time—needs not to be taken into account.
+
+2.1. Epidemiology of norovirus gastroenteritis
+Norovirus-associated acute gastroenteritis is characterized by “sudden onset of vomiting, diarrhea, and abdominal cramps lasting 2–3 days” (Pringle and others, 2015). O’Dea and others (2014) estimate an average symptomatic period of 3.35 days from outbreaks in hospitals and long-term care facilities, where vulnerable individuals live closely together and norovirus outbreaks most commonly occur. Another frequently affected subgroup are children in daycare centers. Norovirus incidence peaks during winter, where outbreaks in childcare facilities were observed to precede those in private households, hospitals, and nursing homes (Bernard and others, 2014b).
+
+Noroviruses are highly contagious since only few viral particles are needed for an infection. Being thermally stable and particularly persistent in the environment (Marshall and Bruggink, 2011), noroviruses can also be transmitted indirectly via contaminated surfaces or food. The serial interval, i.e. the time between onset of symptoms in a primary and a secondary case, ranges from within a day to more than 1 week with a median of about 3 days (Götz and others, 2001).
+
+2.2. Incidence data
+In Germany, the national public health institute (the Robert Koch Institute, RKI) provides access to incidence data of notifiable diseases through the SurvStat@RKI 2.0 online service (http://survstat.rki.de). Since the last revision of the case definition for norovirus gastroenteritis in 2011, only laboratory-confirmed cases are reported to the RKI. The number of cases to be modeled thus excludes all asymptomatic cases as well as all those symptomatic cases, who have not found their way to laboratory testing (Gibbons and others, 2014). It is known that under-reporting of norovirus illness is most pronounced in the 20- to 29-year-old persons and substantially lower in persons aged \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$<10$\end{document} years and 70 years and over (Bernard and others, 2014c). A sensitivity analysis will indicate how under-reporting may affect the interpretation of our model results.
+
+As to the geographic region of interest, we chose the largest city of Germany, Berlin, which is divided into 12 administrative districts. This enables the analysis of disease spread on a smaller spatial scale. Furthermore, a large underlying population is required for our time-series model to be a reasonable approximation of the epidemic process (Farrington and others, 2003).
+
+We have downloaded weekly numbers of reported cases of norovirus gastroenteritis in Berlin from SurvStat@RKI (as of the annual report 2015). These counts cover four norovirus seasons, from 2011-W27 to 2015-W26, and are stratified by the 12 city districts and six age groups: 0–4, 5–14, 15–24, 25–44, 45–64, and 65+ years of age. The age groups were condensed from 5-year intervals to reflect distinct social mixing of pre-school vs. school children, and intergenerational mixing. Similarly stratified population numbers were obtained from the Statistical Information System Berlin-Brandenburg StatIS-BBB (http://www.statistik-berlin-brandenburg.de/statis) at the reference date December 31, 2011, when Berlin had 3 501 872 inhabitants in total.
+
+
+Figure 1 (left) shows the weekly norovirus incidence stratified by age group and aggregated over all city districts. The reported incidence is higher in pre-school children and the retired population than in the other age groups. The yearly seasonal pattern, with overall counts ranging from 7 to 214 cases per week, is approximately constant during the four years (supplementary Figure S1, See supplementary material available at Biostatistics online). The typical bump during the Christmas break could be related to reporting deficiencies and school closure (Hens and others, 2009). The time series of the 5- to 14-year-old children contains an outbreak caused by contaminated frozen strawberries, which were delivered almost exclusively to schools and childcare facilities (Bernard and others, 2014a). Comparing seasonality between the age groups, the peak incidence in pre-school children seems to precede the peak in the highest age group. Our age-structured modeling approach will help to address the question raised by Bernard and others (2014b), “whether this reflects a pattern of disease transmission from young to old in the community”—taking the spatial aspect of disease spread into account.
+Fig. 1. Age-stratified time series and maps of norovirus gastroenteritis incidence (per 100 000 inhabitants) in Berlin, 2011-W27 to 2015-W26. The weekly incidence plots on the left all use the same \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\sqrt{}$\end{document}-scale. The Christmas break in calendar weeks 52 and 1 is highlighted. The group-specific maps on the right show the mean yearly incidence by city district.
+
+
+
+How disease incidence varies across the 12 city districts of Berlin is shown in Figure 1 (right). The south-western district Steglitz-Zehlendorf tends to be affected more and the central districts tend to be affected less than the remaining districts. This pattern is roughly consistent across age groups. An exception are the two younger age groups, which exhibit a relatively high incidence in Marzahn-Hellersdorf. District-specific seasonal shifts are not apparent (supplementary Figure S2, See supplementary material available at Biostatistics online).
+
+Animated, age-stratified maps of the weekly counts encompass the full information from all three data dimensions. Such an animation (supplementary material) may provide additional insight into the dynamics of disease spread. However, epidemic models estimated from these data offer a more structured view and take population heterogeneity directly into account.
+
+2.3. Contact data
+We use contact data from the German subset of the POLYMOD study (Mossong and others, 2008), where both physical and non-physical (conversational) contacts have been recorded. We will report results based on all contacts and on physical contacts only. The age-structured social contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = (c_{g'g})$\end{document} contains the mean numbers of contact persons in age group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document} during one day reported by a participant in age group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g'$\end{document}. Instead of using sample means, we estimate \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document} by the approach of Wallinga and others (2006), which accounts for the reciprocal nature of contacts. Each entry \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c_{g'g}$\end{document} is assumed to be the mean of a negative binomial distribution, under the restriction \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c_{g'g} n_{g'} = c_{gg'} n_{g}$\end{document}, where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$n_g$\end{document} is Berlin’s population in age group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document}. We estimate a detailed contact matrix with 5-year intervals, which we subsequently aggregate to the above six age groups (Figure 2). Direct estimation of the aggregated contact matrix leads to similar numbers.
+Fig. 2. Age-structured contact matrix estimated from the German POLYMOD sample using 5-year intervals (left), and aggregated to the age groups of the surveillance data (right). The entries refer to the mean number of contact persons per participant per day.
+
+
+
+The strong diagonal pattern in the social contact matrix reflects that people tend to mix with people of the same age. The other prominent pattern is produced by the contacts between parents and children. The matrix for physical contacts shows similar patterns (supplementary Figure S3, See supplementary material available at Biostatistics online). Aggregation of the contact matrix is done by summing over the contact groups (columns) to be joined and calculating the weighted average across the corresponding participant groups (rows), with weights equal to the group sizes. The aggregated contact matrix is asymmetric because of the different sizes of the involved age groups, but reciprocity at the population level still holds. For the models described in the next section, only the row-wise distributions will be relevant, i.e. the contact pattern of an infectious participant across the different age groups.
+
+3. AN AGE-STRUCTURED SPATIO-TEMPORAL MODEL FOR INFECTIOUS DISEASE COUNTS
+We review an endemic–epidemic modeling framework for areal time series of infectious disease counts (Meyer and Held, 2014, Section 3), into which we subsequently incorporate an additional stratification variable featuring a contact matrix.
+
+3.1. Spatio-temporal formulation
+Conditionally on past observations, the number of reported infections in region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document} and time period \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$t$\end{document}, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y_{rt}$\end{document}, is assumed to follow a negative binomial distribution with mean \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu_{rt}$\end{document} and region-specific overdispersion parameters \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\psi_r$\end{document} such that the conditional variance of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y_{rt}$\end{document} is \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu_{rt} (1+\psi_r \mu_{rt})$\end{document}. The lower bound \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\psi_r = 0$\end{document} yields the Poisson distribution as a special case, and a common simplifying assumption is that \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\psi_r = \psi$\end{document} is shared across regions. In its most general formulation, the mean \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu_{rt}$\end{document} is additively decomposed into endemic and observation-driven epidemic components as
+ (3.1) μrt =ertνrt+λrtYr,t−1+ϕrt∑r′≠r⌊wr′r⌋Yr′,t−1 
+with log-linear predictors
+ (3.2) log⁡(νrt) =αr(ν)+β(ν)⊤zrt(ν),log⁡(λrt) =αr(λ)+β(λ)⊤zrt(λ),log⁡(ϕrt) =αr(ϕ)+β(ϕ)⊤zrt(ϕ), 
+and normalized transmission weights \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\left\lfloor {{w_{r'r}}} \right\rfloor := w_{r'r} / \sum_j w_{r'j}$\end{document}, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$w_{rr} = 0$\end{document}. The regression terms in (3.2) often include sine–cosine effects of time to reflect seasonally varying incidence (Held and Paul, 2012), but \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{z}_{rt}^{(\cdot)}$\end{document} may also involve other explanatory variables, such as vaccination coverage (Herzog and others, 2011). The first, endemic component in (3.1) is typically modeled proportional to a (population) offset \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$e_{rt}$\end{document}, and partially captures infections not directly linked to observed cases from the previous time period, e.g. due to traveling outside the study region (edge effects). The epidemic component splits up into autoregressive effects, i.e. reproduction of the disease within region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document}, and neighborhood effects, i.e. transmission from other regions \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r'$\end{document}. It has proven useful to account for population size also in \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\log(\phi_{rt}) = \alpha_r^{(\phi)} + \tau \log(e_{rt})$\end{document}, such that \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\tau$\end{document} determines how “attraction” to a region scales with population size (Xia and others, 2004). Furthermore, transmission weights \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$w_{r'r}$\end{document} reflect the flow of infections from region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r'$\end{document} to region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document}. These weights may be based on additional movement network data (Paul and others, 2008; Schrödle and others, 2012; Geilhufe and others, 2014), but may also be estimated from the data at hand. A suitable parametric model is a power-law distance decay \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$w_{r'r} = o_{r'r}^{-\rho}$\end{document} in terms of the adjacency order \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$o_{r'r}$\end{document} in the neighborhood graph of the regions (Meyer and Held, 2014).
+
+Estimating separate dynamics for the reproduction of the disease within a region on the one hand, and transmission from other regions on the other hand, goes back to the original model formulation of Held and others (2005), where only first-order neighbors have been incorporated. The parametric distance weights offer an appealing alternative to reflect predominant local autoregression in a simpler model with a single epidemic component:
+ (3.3) μrt=ertνrt+ϕrt∑r′⌊wr′r⌋Yr′,t−1, 
+where the choice \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$w_{r'r} = (o_{r'r} + 1)^{-\rho}$\end{document} gives unit weight to local transmission (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r'=r$\end{document}) and then decays as a power law in terms of adjacency order. With such a power law and the suggested population dependence of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_{rt}$\end{document}, the epidemic component of (3.3) constitutes a so-called gravity model (Xia and others, 2004; Höhle, 2016). Furthermore, this formulation uses fewer parameters and extends more naturally to an additional stratification variable.
+
+3.2. Extension for stratified areal count time series
+Extending the above spatio-temporal model to fit multivariate time series of counts \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y_{grt}$\end{document} stratified by (age) group in addition to region enables us to relax the simple assumption of homogeneous mixing within each region. More complex strata such as the interaction of age group and gender are equally possible and can be subsumed in the single group index \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document}.
+
+We assume that a contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = (c_{g'g})$\end{document} is given, where each entry \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c_{g'g} \ge 0$\end{document} quantifies the average number of contacts of an individual of group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g'$\end{document} with individuals of group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document}. The spatio-temporal model (3.3) then extends to a three-dimensional version as
+ (3.4) μgrt=egrtνgrt+ϕgrt∑g′,r′⌊cg′gwr′r⌋Yg′,r′,t−1, 
+where both the endemic and epidemic predictors may gain group-specific effects. How the counts from the previous period affect the current mean in group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document} and region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document} is now determined by a product of contact and spatial weights. The product ensures that cases from group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g'$\end{document} in region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r'$\end{document} are ignored if there are no contacts to group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document} or if there is no flux of infections from region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r'$\end{document} to region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document}. The weights are row-normalized over all combinations of group and region: \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\sum_{g,r} \left\lfloor {{c_{g'g} w_{r'r}}} \right\rfloor = 1$\end{document}. Note that this normalization removes any differences in group-specific overall contact rates (the row sums of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document}). Our model therefore does not distinguish between proportionate mixing, where the rows of the contact matrix only differ by a proportionality factor, and a matrix with identical rows. The weighted sum of past cases transmitted to group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g$\end{document} in region \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$r$\end{document} is scaled by \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_{grt}$\end{document}. If \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_{grt} = \phi_g^{(G)} \phi_{r}^{(R)}$\end{document}, the group-specific effects \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_g^{(G)}$\end{document} will adjust the columns of the contact matrix.
+
+There are two special cases of the contact structure involved in the epidemic component. First, a contact matrix with identical rows implies that the mixing pattern of the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y_{g',r',t-1}$\end{document} infectious cases does not depend on the group \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g'$\end{document} they belong to. An example of such homogeneous mixing is a contact matrix where each row equals the vector of group sizes (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c_{g'g} = e_g$\end{document}). If \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_{grt}$\end{document} contains group-specific effects, a simple matrix of ones (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = \bf{1}$\end{document}) will induce the same contact structure. The other special case is a diagonal contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = \boldsymbol{I}$\end{document}, which reflects complete absence of mixing. This is equivalent to formulating a separate spatio-temporal model (3.3) for each group. However, also in this case of no between-group mixing, the joint model formulation has the advantage of allowing for parsimonious decompositions of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\nu_{grt}$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_{grt}$\end{document} into group and region effects. Borrowing strength across groups is especially useful in applications with low counts.
+
+3.3. Parameterizing the contact matrix
+Contact patterns derived from sociological studies might not fully match the characteristics of disease spread. For example, social networks are known to change during illness (van Kerckhove and others, 2013) and brief contacts are frequently not reported (Smieszek and others, 2014). We therefore suggest a parsimonious single-parameter approach to adaptively estimate the transmission weights as a function of the given contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document}.
+
+Our proposal is borrowed from Köchenhoff and others (2006), who progressively transform a misclassification matrix to establish an association between the amount of misclassification in a covariate and the corresponding parameter estimate. The proposed transformation is based on the eigendecomposition of the matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document} to raise it to the power of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa \ge 0$\end{document},
+ (3.5) Cκ:=EΛκE−1, 
+where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{\Lambda}$\end{document} is the diagonal matrix of eigenvalues and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{E}$\end{document} is the corresponding matrix of eigenvectors. Translated to our setting, the parameter \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document} measures the amount of transmission between the subgroups of the population. Specifically, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa = 0$\end{document} corresponds to complete absence of between-group transmission (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = \boldsymbol{I}$\end{document}), whereas \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa = 1$\end{document} leaves the contact matrix unchanged. If \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document} is row-normalized, all rows of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} converge to the same distribution as \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa \to \infty$\end{document}. The transmission pattern thus becomes independent of the group the infected individual belongs to. Because of this useful interpretation, we assume a pre-normalized contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document} in the remainder of this paper.
+
+The basic requirement that \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document} can be factorized by an eigendecomposition will hold in most practical cases. However, we also need to make sure that \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} has non-negative entries for \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa < 1$\end{document}. With our contact matrix, two entries in \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} become negative (but close to 0) for small \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document}. We follow a pragmatic approach and truncate negative entries at 0. Figure 3 exemplifies \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} for the row-normalized version of the contact matrix from Figure 2, and illustrates how diagonal and off-diagonal entries, respectively, are affected by the power transformation.
+Fig. 3. The power transformation \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} (3.5) applied to the row-normalized POLYMOD contact matrix for different values of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document}. The right-hand plots show the values of the diagonal entry \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lbrack 3,3\rbrack$\end{document} and the off-diagonal entry \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lbrack 3,6\rbrack$\end{document} of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document}.
+
+
+
+3.4. Inference
+Likelihood inference for the multivariate count time-series model (3.1) has been developed by Paul and Held (2011) and Meyer and Held (2014). The log-likelihood is maximized numerically using the quasi-Newton algorithm provided by the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\textsf{R}$\end{document} function \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{nlminb}$\end{document} (R Core Team, 2016). Supplied with analytical formulae for the score function and Fisher information, convergence is fast, even for a large number of parameters. The modeling framework is implemented in the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\textsf{R}$\end{document} package \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{surveillance}$\end{document} (Meyer and others, 2016, Section 5) as function \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{hhh4}$\end{document}.
+
+The age-structured model (3.4) is built on top of the existing inference framework. The power parameter \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document} of (3.5) is conveniently estimated via a profile likelihood approach (see, e.g. Held and Sabanés Bové, 2014, Section 5.3), which avoids the cumbersome implementation of additional derivatives with respect to all model parameters. We numerically maximize the log-likelihood of a model with fixed contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} as a function of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document}. The profile confidence interval for \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document} thus incorporates the uncertainty of all other parameter estimates (but not vice versa).
+
+4. RESULTS
+We apply an age-structured spatio-temporal model of the form (3.4) to the norovirus data described in Section 2. As the number of cases varies strongly by age group, we use group-specific overdispersion parameters \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\psi_g$\end{document}. For the mean, we assume the endemic–epidemic structure
+ (4.1) μgrt =egrexp⁡{αg(G)+αr(R)+βxt+γgsin⁡(ωt)+δgcos⁡(ωt)} +egrτϕg(G)ϕr(R)∑g′,r′⌊(Cκ)g′g(or′r+1)−ρ⌋Yg′,r′,t−1. 
+
+The endemic predictor allows for age- and district-specific incidence levels, fewer cases during the Christmas break (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$x_t = 1$\end{document} in calendar weeks 52 and 1, otherwise \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$x_t=0$\end{document}), as well as age-specific seasonality (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\omega = 2\pi/52$\end{document}). Transmission between age groups is modeled using the power transformation (3.5) for the row-normalized contact matrix estimated from the POLYMOD study. Transmission between districts is quantified by a power law with respect to adjacency order. The intercepts are identifiable by fixing \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\alpha_1^{(G)}=\alpha_1^{(R)}=0$\end{document}, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_1^{(G)}=\phi_1^{(R)}=1$\end{document}, where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_g^{(G)}$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\phi_r^{(R)}$\end{document} are estimated on the log-scale, and including overall intercepts in both model components.
+
+
+Table 1 summarizes competing models with respect to the assumed contact structure between age groups. It turns out that a superposed epidemic component improves upon a purely endemic model, and that incorporating the contact matrix from the POLYMOD study outperforms naive models with homogeneous or no mixing between age groups. Akaike’s Information Criterion (AIC) is minimal for the model with a power-adjusted contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document} (penultimate row), where the exponent is estimated to be \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat{\kappa} =$\end{document} 0.47 (95% CI: 0.34–0.66). This means that the epidemic part subsumes more information from cases in the own age group than suggested by the original contact matrix (cf Figure 3). The change in AIC associated with this adjustment, however, is minor compared to the improvement achieved by employing the POLYMOD contact matrix in the first place. Results are very similar for physical contacts, but the fit is slightly worse.
+Table 1. Model summaries for the age-stratified, areal surveillance data of norovirus gastroenteritis in Berlin. For reference, the first row represents the purely endemic model, which assumes independent counts. The remaining rows correspond to endemic–epidemic models with a spatial power law, but varying assumptions on the age-structured contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document}. The columns refer to the following model characteristics: the number of parameters, the difference in AIC compared to the purely endemic model, the power \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\tau$\end{document} of the population scaling factor, the decay parameter \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\rho$\end{document} of the spatial power law, and the power adjustment \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document} of the contact matrix. The parameter columns contain the estimates and 95% Wald confidence intervals
+
+ 	dim	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\Delta$\end{document}AIC	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\tau$\end{document}	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\rho$\end{document}	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\kappa$\end{document}	
+Purely endemic model	36	0.0	—	—	—	
+Homogeneous mixing (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = \bf{1}$\end{document})	55	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}415.4	1.19 (0.83–1.55)	2.43 (2.04–2.88)	—	
+No mixing (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C} = \boldsymbol{I}$\end{document})	55	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}602.8	0.61 (0.24–0.98)	2.18 (1.89–2.53)	—	
+Original contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}$\end{document}	55	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}631.9	0.97 (0.66–1.28)	2.34 (2.03–2.70)	—	
+Adjusted contact matrix \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\boldsymbol{C}^\kappa$\end{document}	56	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}659.4	0.86 (0.53–1.19)	2.27 (1.98–2.61)	0.47 (0.34–0.66)	
+Based on physical contacts only	56	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}655.3	0.85 (0.52–1.19)	2.27 (1.98–2.61)	0.48 (0.35–0.66)	
+
+
+The spatial spread of the disease across city districts is estimated to have a strong distance decay with \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat{\rho} =$\end{document} 2.27 (95% CI: 1.98–2.61), such that the adjacency orders 0–4 have weights 1.00, 0.21, 0.08, 0.04, and 0.03. Supplementary Figure S4, See supplementary material available at Biostatistics online, shows age-dependent power laws (replacing \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\rho$\end{document} by \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\rho_{g'}$\end{document} in (4.1)), as well as unconstrained estimates of the order-specific weights, which are close to the power law. In accordance with the idea of a gravity model, we find that the epidemic part scales with the population size of the “importing” district and age group. Similar to a previous application on influenza (Meyer and Held, 2014), the corresponding estimate \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat{\tau} =$\end{document} 0.86 (95% CI: 0.53–1.19) is slightly below unity and provides strong evidence for such an association.
+
+
+Figure 4 shows the endemic–epidemic decomposition of the estimated mean aggregated across districts (supplementary Figures S5–S7, See supplementary material available at Biostatistics online for the district-level and overall fits). When reformulating the model as a multivariate branching process with immigration (Held and Paul, 2012), the largest eigenvalue of the matrix holding the estimated coefficients of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y_{g',r',t-1}$\end{document} is 0.71, which can be interpreted as the overall epidemic proportion of disease incidence. However, this value mostly reflects the situation for the 65+ age group where the within-group spread is dominating. In contrast, for the groups of 5–14 and 15–24 year-old persons, almost no dependence on past counts of the same or the other age groups can be identified. Interestingly, the groups of 25–44 and 45–64 year-old persons seem to inherit a relevant proportion of cases from other age groups. The youngest age group, though, mostly depends on the endemic component and its own cases, which is probably related to their early onset. The age-dependent sine–cosine effects capture these shifts and are shown in supplementary Figure S8, See supplementary material available at Biostatistics online. The modal endemic incidence is in calendar weeks 48 (0–4), 45 (5–14), 52 (15–24), 51 (25–44), 52 (45–64), and 3 (65+), respectively. The largest amplitude is estimated for the youngest and oldest groups.
+Fig. 4. Fitted mean components from the AIC-optimal model with adjusted contact matrix, aggregated over all districts. The dots correspond to the reported numbers of cases.
+
+
+
+The estimated group-specific overdispersion parameters are 0.24 (0–4), 1.98 (5–14), 0.30 (15–24), 0.03 (25–44), 0.15 (45–64), and 0.40 (65+) in the model with adjusted contact matrix. The large overdispersion for the 5- to 14-year-old children may be partly due to the food-borne outbreak in 2012, for which the model does not explicitly account. The estimates are similar for the other epidemic models of Table 1, but slightly larger in the endemic-only model.
+
+5. DISCUSSION
+We have incorporated a social contact matrix in a regression-oriented, endemic–epidemic time-series model for stratified, area-level infectious disease counts. This three-dimensional approach provides a more detailed description of disease spread than unstratified or non-spatial models, which inherently assume homogeneous mixing within each region or subgroup, respectively.
+
+In our application to age-stratified counts of norovirus gastroenteritis in Berlin’s city districts, the contact model was superior to homogeneous or no mixing between age groups. The model further improved when adjusting the POLYMOD contact matrix toward more within-group transmission. This could be related to biases in contact reporting (Smieszek and others, 2014) with more unreported (short) contacts along the diagonal. The two age groups involving parents were affected the most by preceding infections in other age groups. This is in accordance with the leading role of school children in influenza epidemics (Worby and others, 2015).
+
+Furthermore, new infections predominantly depend on past cases from the same district, as suggested by the estimated spatial transmission weights. An age-dependent distance decay could not be identified from the disease counts. One could thus try to replace the parametric formulation by a social contact matrix, stratified by spatial distance in addition to age group. Separate movement data for school children and adults could then be used to quantify the strength of epidemiological coupling between regions (Kucharski and others, 2015). However, integration of movement network data does not necessarily improve predictions (Geilhufe and others, 2014).
+
+A potentially more severe simplification of our model is the assumption of a time-constant contact matrix. Although weekday vs. weekend differences in contact patterns are not relevant for weekly time-series models, there are possibly relevant seasonal effects on larger time scales. For instance, the contact structure of school children changes considerably between regular and school holiday periods (Hens and others, 2009). Our model could be further tuned both by incorporating a time-varying contact matrix and by estimating seasonality also in the epidemic component (Held and Paul, 2012), which the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\texttt{hhh4}$\end{document} implementation already supports.
+
+To check the robustness of our results with respect to under-reporting, we re-estimated the models with age-specific multiplication factors applied to the reported numbers of cases. Roughly following Bernard and others (2014c, Table 1), we used factors of 1.5 (0–4), 2.5 (5–14), 3.0 (15–24), 3.0 (25–44), 2.5 (45–64), and 2.0 (65+), respectively. While the overdispersion increases, the parameters of the mean are close to the original fit and the epidemic proportion is similar (supplementary Figure S9, See supplementary material available at Biostatistics online). For small strata with a low number of cases, a drawback of this simple deterministic approach is that zero reported counts remain zero regardless of the amount of under-reporting. More sophisticated adjustments are currently being investigated within a Bayesian modeling framework. In principle, asymptomatic infections could be similarly accounted for as missing cases, but they seem to play a minor role in disease transmission (Sukhrie and others, 2012). One-week-ahead forecasts or long-term simulations of the number of (symptomatic) infections, however, are of particular relevance for public health planning. Whether the improved model with social contact data also leads to better predictions will be described elsewhere.
+
+Supplementary Material
+Supplementary Data Click here for additional data file.
+
+ ACKNOWLEDGMENTS
+We thank the associate editor, two anonymous referees, and Michael Höhle for helpful comments on a previous version of this manuscript. Joël Mossong made the POLYMOD data available, and a KML file of Berlin’s districts Conflict of Interest: None declared.
+
+SUPPLEMENTARY MATERIAL
+
+Supplementary material is available at http://biostatistics.oxfordjournals.org.
+
+FUNDING
+Swiss National Science Foundation (project #137919).
+==== Refs
+REFERENCES
+
+Baguelin M. Flasche S. Camacho A. Demiris N. Miller E.  and Edmunds W. J.   (2013 ). Assessing optimal target populations for influenza vaccination programmes: an evidence synthesis and modelling study. PLoS Medicine 10 , e1001527. 24115913 
+
+Bernard H. Faber M. Wilking H. Haller S. Höhle M. Schielke A. Ducomble T. Siffczyk C. Merbecks S. S. Fricke G. Hamouda O. Stark K. Werber D.  
+and others.  (2014a ). Large multistate outbreak of norovirus gastroenteritis associated with frozen strawberries, Germany, 2012. Eurosurveillance 19 , pii=20719. 
+
+Bernard H. Höhne M. Niendorf S. Altmann D.  and Stark K.   (2014b ). Epidemiology of norovirus gastroenteritis in Germany 2001–2009: eight seasons of routine surveillance. Epidemiology & Infection 142 , 63 –74 .23517686 
+
+Bernard H. Werber D.  and Höhle M.   (2014c ). Estimating the under-reporting of norovirus illness in Germany utilizing enhanced awareness of diarrhoea during a large outbreak of Shiga toxin-producing E. coli O104:H4 in 2011 – a time series analysis. BMC Infectious Diseases 14 , 116. 24580831 
+
+Birrell P. J. Ketsetzis G. Gay N. J. Cooper B. S. Presanis A. M. Harris R. J. Charlett A. Zhang X. S. White P. J. Pebody R. G.  
+and others . (2011 ). Bayesian modeling to unmask and predict influenza A/H1N1pdm dynamics in London. Proceedings of the National Academy of Sciences of the United States of America 108 , 18238 –18243 .
+
+Brockmann D. Hufnagel L.  and Geisel T.   (2006 ). The scaling laws of human travel. Nature 439 , 462 –465 .16437114 
+
+Farrington C. P. Kanaan M. N.  and Gay N. J.   (2003 ). Branching process models for surveillance of infectious diseases controlled by mass vaccination. Biostatistics 4 , 279 –295 .12925522 
+
+Geilhufe M. Held L. Skrøvseth, S. O., Simonsen G. S.  and Godtliebsen F.   (2014 ). Power law approximations of movement network data for modeling infectious disease spread. Biometrical Journal 56 , 363 –382 .24843881 
+
+Gibbons C. L. Mangen M.-J. Plass D. Havelaar A. H. Brooke R. J. Kramarz P. Peterson K. L. Stuurman A. L. Cassini A. Fèvre E. M.  
+and others . (2014 ). Measuring underreporting and under-ascertainment in infectious disease datasets: a comparison of methods. BMC Public Health 14 , 1 –17 .
+
+Goeyvaerts N. Hens N. Ogunjimi B. Aerts M. Shkedy Z. van Damme P.  and Beutels P.   (2010 ). Estimating infectious disease parameters from data on social contacts and serological status. Journal of the Royal Statistical Society, Series C 59 , 255 –277 .
+
+Goeyvaerts N. Willem L.  Van Kerckhove K. Vandendijck Y. Hanquet G. Beutels P.  and Hens N.   (2015 ). Estimating dynamic transmission model parameters for seasonal influenza by fitting to age and season-specific influenza-like illness incidence. Epidemics 13 , 1 –9 .26616037 
+
+Götz H. Ekdahl K. Lindbäck J. De Jong B. Hedlund K. O.  and Giesecke J.   (2001 ). Clinical spectrum and transmission characteristics of infection with Norwalk-like virus: Findings from a large community outbreak in Sweden. Clinical Infectious Diseases 33 , 622 –628 .11477530 
+
+Held L.  and Paul M.   (2012 ). Modeling seasonality in space-time infectious disease surveillance data. Biometrical Journal 54 , 824 –843 .23034894 
+
+Held L.  and Sabanés Bové D.   (2014 ). Applied Statistical Inference: Likelihood and Bayes . Berlin : Springer. 
+
+Held L. Höhle M.  and Hofmann M.   (2005 ). A statistical framework for the analysis of multivariate infectious disease surveillance counts. Statistical Modelling 5 , 187 –199 .
+
+Hens N. Ayele G. Goeyvaerts N. Aerts M. Mossong J. Edmunds J.  and Beutels P.   (2009 ). Estimating the impact of school closure on social mixing behaviour and the transmission of close contact infections in eight European countries. BMC Infectious Diseases 9 , 187. 19943919 
+
+Herzog S. A. Paul M.  and Held L.   (2011 ). Heterogeneity in vaccination coverage explains the size and occurrence of measles epidemics in German surveillance data. Epidemiology & Infection 139 , 505 –515 .20619079 
+
+Höhle M.   (2016 ). Infectious Disease Modelling.  In: Lawson A. B. Banerjee S. Haining R. P.  and Ugarte M. D.   (editors), Handbook of Spatial Epidemiology , Chapman & Hall/CRC Handbooks of Modern Statistical Methods, Chapter 26. Boca Raton : Chapman and Hall/CRC,  pp. 477 –500 .
+
+Kucharski A. J. Conlan A. J. K.  and Eames K. T. D.   (2015 ). School’s out: seasonal variation in the movement patterns of school children. PLoS One 10 , 1 –10 .
+
+Küchenhoff H. Mwalili S. M.  and Lesaffre E.   (2006 ). A general method for dealing with misclassification in regression: the misclassification SIMEX. Biometrics 62 , 85 –96 .16542233 
+
+Marshall J. A.  and Bruggink L. D.   (2011 ). The dynamics of norovirus outbreak epidemics: recent insights. International Journal of Environmental Research and Public Health 8 , 1141 –1149 .21695033 
+
+Meyer S.  and Held L.   (2014 ). Power-law models for infectious disease spread. Annals of Applied Statistics 8 , 1612 –1639 .
+
+Meyer S. Held L.  and Höhle M.   (2016 ). Spatio-temporal analysis of epidemic phenomena using the R package surveillance. Journal of Statistical Software  (in press ). Preprint at arXiv:1411.0416. 
+
+Mossong J. Hens N. Jit M. Beutels P. Auranen K. Mikolajczyk R. Massari M. Salmaso S. Tomba G. S. Wallinga J. Heijne J. Sadkowska-Todys M. Rosinska M.  
+and others . (2008 ). Social contacts and mixing patterns relevant to the spread of infectious diseases. PLoS Medicine 5 , e74. 
+
+O’Dea E. B. Pepin K. M. Lopman B. A.  and Wilke C. O.   (2014 ). Fitting outbreak models to data from many small norovirus outbreaks. Epidemics 6 , 18 –29 .24593918 
+
+Paul M.  and Held L.   (2011 ). Predictive assessment of a non-linear random effects model for multivariate time series of infectious disease counts. Statistics in Medicine 30 , 1118 –1136 .21484849 
+
+Paul M. Held L.  and Toschke A.   (2008 ). Multivariate modelling of infectious disease surveillance data. Statistics in Medicine 27 , 6250 –6267 .18800337 
+
+Pringle K. Lopman B. Vega E. Vinje J. Parashar U. D.  and Hall A. J.   (2015 ). Noroviruses: Epidemiology, immunity and prospects for prevention. Future Microbiology 10 , 53 –67 .25598337 
+
+R Core Team.  (2016 ). R: A Language and Environment for Statistical Computing . Vienna, Austria : R Foundation for Statistical Computing. 
+
+Read J. M. Edmunds W. J. Riley S. Lessler J.  and Cummings D. A. T.   (2012 ). Close encounters of the infectious kind: Methods to measure social mixing behaviour. Epidemiology & Infection 140 , 2117 –2130 .22687447 
+
+Read J. M. Lessler J. Riley S. Wang S. Tan L. J. Kwok K. O. Guan Y. Jiang C. Q.  and Cummings D. A. T.   (2014 ). Social mixing patterns in rural and urban areas of southern China. Proceedings of the Royal Society of London, Series B 281 (1785 ), 20140268. 24789897 
+
+Rohani P. Zhong X.  and King A. A.   (2010 ). Contact network structure explains the changing epidemiology of pertussis. Science 330 , 982 –985 .21071671 
+
+Schrödle B. Held L.  and Rue H.   (2012 ). Assessing the impact of a movement network on the spatiotemporal spread of infectious diseases. Biometrics 68 , 736 –744 .22171626 
+
+Smieszek T. Barclay V. Seeni I. Rainey J. Gao H. Uzicanin A.  and Salathé M.   (2014 ). How should social mixing be measured: comparing web-based survey and sensor-based methods. BMC Infectious Diseases 14 , 136. 24612900 
+
+Sukhrie F. H. A. Teunis P. Vennema H. Copra C.  Thijs Beersma M. F. C. Bogerman J.  and Koopmans M.   (2012 ). Nosocomial transmission of norovirus is mainly caused by symptomatic cases. Clinical Infectious Diseases 54 , 931 –937 .22291099 
+
+Van Asten L. Van den Wijngaard C. Van Pelt W. Van de Kassteele J. Meijer A. Van der Hoek W. Kretzschmar M.  and Koopmans M.   (2012 ). Mortality attributable to 9 common infections: Significant effect of influenza A, respiratory syncytial virus, influenza B, norovirus, and parainfluenza in elderly persons. Journal of Infectious Diseases 206 , 628 –639 .22723641 
+
+Van Kerckhove K. Hens N. Edmunds W. J.  and Eames K. T. D.   (2013 ). The impact of illness on social networks: implications for transmission and control of influenza. American Journal of Epidemiology 178 , 1655 –1662 .24100954 
+
+Wallinga J. Teunis P.  and Kretzschmar M.   (2006 ). Using data on social contacts to estimate age-specific transmission parameters for respiratory-spread infectious agents. American Journal of Epidemiology 164 , 936 –944 .16968863 
+
+Worby C. J. Chaves S. S. Wallinga J. Lipsitch M. Finelli L.  and Goldstein E.   (2015 ). On the relative role of different age groups in influenza epidemics. Epidemics 13 , 10 –16 .26097505 
+
+Xia Y. Bjørnstad O. N.  and Grenfell B. T.   (2004 ). Measles metapopulation dynamics: a gravity model for epidemiological coupling and dynamics. The American Naturalist 164 , 267 –281 .

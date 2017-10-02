@@ -1,0 +1,1618 @@
+
+==== Front
+BiostatisticsBiostatisticsbiostsbiostsBiostatistics (Oxford, England)1465-46441468-4357Oxford University Press 2481242010.1093/biostatistics/kxu019kxu019ArticlesOn shrinkage and model extrapolation in the evaluation of clinical center performance Varewyck Machteld *Goetghebeur Els Department of Applied Mathematics, Computer Science and Statistics, Ghent University, 9000 Ghent, BelgiumEriksson Marie Department of Statistics, Umeå University, 901 87 Umeå, SwedenVansteelandt Stijn Department of Applied Mathematics, Computer Science and Statistics, Ghent University, 9000 Ghent, Belgium* To whom correspondence should be addressed. machteld.varewyck@ugent.be10 2014 08 5 2014 08 5 2014 15 4 651 664 19 7 2013 14 3 2014 24 3 2014 © The Author 2014. Published by Oxford University Press.2014This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.We consider statistical methods for benchmarking clinical centers based on a dichotomous outcome indicator. Borrowing ideas from the causal inference literature, we aim to reveal how the entire study population would have fared under the current care level of each center. To this end, we evaluate direct standardization based on fixed versus random center effects outcome models that incorporate patient-specific baseline covariates to adjust for differential case-mix. We explore fixed effects (FE) regression with Firth correction and normal mixed effects (ME) regression to maintain convergence in the presence of very small centers. Moreover, we study doubly robust FE regression to avoid outcome model extrapolation. Simulation studies show that shrinkage following standard ME modeling can result in substantial power loss relative to the considered alternatives, especially for small centers. Results are consistent with findings in the analysis of 30-day mortality risk following acute stroke across 90 centers in the Swedish Stroke Register.
+
+Causal inferenceDouble robustnessFirth correctionProfiling center performancePropensity scoreQuality of careRandom and fixed effects
+==== Body
+1. Introduction
+In recent years, the interest in profiling hospital performance has grown among different stakeholders including government and health insurers, hospitals and clinicians, and last but not least the patients. Health-care quality thus deserves careful statistical analysis yielding relevant and relatively simple measures with clear interpretation for hospital evaluation.
+
+In this article, we focus on statistical methods to estimate center performance on a binary quality indicator such as 30-day mortality. Causal inference methods will be adopted to adjust for measured confounding by differential patient mix (e.g. initial disease status, age). This is important (DeLong and others, 1997; Austin and others, 2003) as centers treating more severely ill patients tend to have higher mortality irrespective of treatment quality. Most literature uses indirect standardization to adjust for patient mix (Spiegelhalter, 2005; Shahian and Normand, 2008). This involves contrasting the observed average quality outcome in each center with what it would have been for their patients if “the average level of care over all centers” applied. This is particularly helpful for policy makers when deciding where to best spend resources for quality improvement. However, when centers are expected to provide good health care on the overall patient population, directly standardized outcomes may be of greater interest. This potential full population risk in each center will be our focus. It makes us consider how the entire study population would have fared under the current level of care of each center.
+
+Random effects models which incorporate patient-specific baseline covariates are routinely applied for indirect standardization (Ohlssen and others, 2007), and can also be used for direct standardization. The main advantage of these models is that they severely reduce the effective model dimension, thereby avoiding problems of overfitting. However, two main shortcomings deserve more in-depth study: shrinkage and model extrapolation. First, estimates for small centers may shrink severely toward the population mean, resulting in bias and power loss for these centers (Normand and others, 1997). This is a major concern because the quality of care in small centers is sometimes questioned, in view of their potentially more limited surgical experience or medical infrastructure (Saposnik and others, 2007). Fixed effects (FE) models are no viable substitute in settings encountering many centers with often small numbers of registered patients, where this method suffers from bias and convergence problems (Neyman and Scott, 1948). In this article, we will investigate whether this limitation can be overcome via the Firth correction for fixed center effects models (Firth, 1993). Secondly, when case-mix differs severely between centers, results from the default fixed and random effects models can become very sensitive to model misspecification which is hard to detect (Rubin, 1997). We aim to overcome this using doubly robust methods (Robins and others, 2007) that build on a fixed center effects model (with Firth correction) but utilize inverse weighting by the so-called propensity score (PS) (Shahian and Normand, 2008), which is the probability of being treated in the observed center based on patient characteristics.
+
+These statistical methods will be compared in terms of their support for correct detection of low- and more importantly high-risk centers. For this purpose, we will adapt the decision criterion suggested by Normand and others (1997) to the framework of direct standardization. Specifically, we will seek solid statistical evidence of a clinically relevant difference between the potential full population risk from a given center and the observed population risk.
+
+Comparisons are made in two case studies: a simulation study on quality insurance for rectal cancer treatment in Belgium and an analysis of quality of care data from the Swedish Stroke Register (Asplund and others, 2011). They reflect markedly different settings with chronic versus acute illness, with major versus more limited differences in case-mix, with small versus larger center sizes, and with a limited versus rich set of patient covariates.
+
+2. Profiling center performance: framework
+Throughout the paper, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$C$\end{document} is a random variable indicating in which center the patient was actually treated (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$C=1, \ldots , m$\end{document}) and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\textbf {L}$\end{document} denotes the vector of patient-specific baseline characteristics such as gender and initial disease status. The methods below focus on 30-day mortality \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y$\end{document}, but can easily be extended to a continuous or categorical outcome.
+
+2.1 Direct versus indirect standardization
+Direct standardization aims to infer the potential full population risk for each center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document}: the risk that would be realized if all patients under study were to experience the care level of that given center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document}, irrespective of where they were actually treated. We denote this by \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document}, where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y(c)$\end{document} indicates the potential outcome for a given patient if treated at the care level of center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document}. A main feature of direct standardization is that the patient mix used for comparison is a common set of subjects. As such, center comparisons are based on their current performance in the extended patient population, where the extent of extrapolation from each center's own patient population depends on how case-mix differs between centers. This approach may thus evaluate a center's performance based on patients it is not likely to treat.
+
+In contrast, indirect standardization focuses on what a center achieves for its own patient mix. For instance, the frequently used standardized mortality ratio (SMR) takes the ratio of the center's observed risk and the expected risk if these patients would experience the average care level across all centers where center performance levels were uniformly distributed, i.e.
+ (2.1) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq2.1} \mbox{SMR} = \frac{E\{ E(Y|\textbf{L}, C=c) | C=c \}}{m^{-1} \sum_{c^*=1}^m E\{ E(Y|\textbf{L}, C=c^*) |C=c \}} = \frac{E\{Y(c)|C=c\}}{m^{-1} \sum_{c^*=1}^m E\{Y(c^*)|C=c\}} \end{equation*}\end{document} 
+ (DeLong and others, 1997; Shahian and Normand, 2008). When a difference is taken instead of a ratio, the name “excess risk” is used (Goetghebeur and others, 2011). Indirect standardization thus aims to answer the question: “How would the risk in a given center change if its patients were to experience the average risk across all centers?”. Such contrast with the average risk across all centers can be limiting when this reference deviates from what is ideally targeted.
+
+Direct and indirect standardization extrapolate observations to a general population or a general care level, respectively. This may result in different comparisons, as illustrated in Table 1 where centers 1 and 2 have the same patient-specific mortality risks, but differ in patient mix. Following indirect standardization, these centers are classified as having different performance because their patient mix differs. Moreover, results depend on whether indirect standardization is based on SMRs or excess risks, because small absolute differences can result in large relative differences and vice versa. Therefore, when indirectly standardized outcomes are of interest, we would recommend excess risks emphasizing the possibly large extrapolation of center performance. The directly standardized risks on the other hand detect equal quality of care in centers 1 and 2, because of their equal patient-specific mortality risks. They also allow for direct comparison with the overall risk of 7.02%, but may involve serious extrapolation when the patient population of that center differs substantially from the overall population.
+Table 1. Artificial example comparing center performance based on indirect and direct standardization
+
+	Mortality risk (no. patients)	Indirect standardization	Direct standardization	
+	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$L= {\mathrm {low}}$\end{document}	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$L = {\mathrm {high}}$\end{document}	SMR	Excess risk		
+Center 1	1% (900)	10% (100)	0.8382	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}0.0037	0.0670	
+Center 2	1% (100)	10% (900)	0.9349	\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$-$\end{document}0.0063	0.0670	
+Center 3	2% (100)	12% (900)	1.1301	0.0127	0.0833	
+For the three centers patient-specific mortality risks and patient mix (no. patients) are given per level of the covariate \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$L$\end{document}, indicating low or high baseline severity.
+
+
+
+2.2 Decision criterion for labeling centers
+In Section 3, we will compare statistical methods for direct standardization in terms of correctly detecting low- and more importantly high-risk centers. Therefore, following a proposal first introduced in a Bayesian context (Normand and others, 1997), we will classify a center as low/high risk if the data provide sufficient evidence that the potential risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} exceeds a benchmark relative to the population average risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E(Y)$\end{document}. For this purpose, we will develop estimators \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}\{Y(c)\}$\end{document} for the potential risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} (see Section 3) and then classify a center as low risk if
+ (2.2) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq2.2} \hat{E}\{Y(c)\} + z_k \times \mbox{sd}(\hat{E}\{Y(c)\}) <(1-\lambda) E(Y), \end{equation*}\end{document} 
+or as high risk if
+ (2.3) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq2.3} (1+\lambda) E(Y) < \hat{E}\{Y(c)\} - z_k \times \mbox{sd}(\hat{E}\{Y(c)\}). \end{equation*}\end{document} 
+Here, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda $\end{document} expresses a clinically meaningful tolerance level (e.g. \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$20\%$\end{document}) indicating how much the center-specific potential risk is allowed to depart from the current population average risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E(Y)$\end{document}. The latter can be estimated by the sample average of observed risks or be replaced by a reference standard if objective benchmarks (e.g. national guidelines) are available. In practice such envisaged reference is likely to steer the choice of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda $\end{document} once \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E(Y)$\end{document} is known or has been estimated. Further, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$z_k$\end{document} is the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k \times 100$\end{document}th percentile of the standard normal distribution, so \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k$\end{document} (e.g. 0.75) expresses the degree of statistical evidence required before flagging a center as low/high risk.
+
+The previous criterion has close links to the often used frequentist criterion (DeLong and others, 1997) whereby a center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} is classified as low/high risk if the estimated \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$95\%$\end{document} confidence interval for its potential full population risk excludes the population average risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E(Y)$\end{document}:
+ (2.4) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq2.4} E(Y) \notin [\hat{E}\{Y(c)\} \pm z_{0.975} \times\mbox{sd}(\hat{E}\{Y(c)\})]. \end{equation*}\end{document} 
+See Shahian and Normand (2008) for a related Bayesian criterion. This corresponds with (2.2) and (2.3) if \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda =0$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k=0.975$\end{document}. A key drawback of this criterion is that it disregards clinical significance. In particular, large centers are virtually guaranteed to exclude the population average risk and thus will nearly always be labeled statistically significant low-/high-risk centers.
+
+Pure ranking based on the estimated potential risk is dangerous as it is oblivious to a clinical appreciation of differences between centers as well as to uncertainty. Large differences in ranks may correspond with small clinical differences and vice versa. Moreover, uncertainty around the ranking is often substantial (especially for small centers) and confidence intervals may tend to overlap for different centers (Spiegelhalter, 2005). Although ranking based on the estimated probability of exceeding performance can be considered (Normand and others, 1997), we believe its inherent property of masking the size of differences in center performance demands careful interpretation involving additional information; it will therefore not be considered in this paper.
+
+3. Regression methods
+We will now discuss different methods to estimate the potential full population risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} in each center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c=1, \ldots , m$\end{document}. Let \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$n$\end{document} be the total sample size. Throughout we assume that the patient-specific covariates \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\textbf {L}$\end{document} are sufficient to adjust for confounding of the center-outcome effect, so that \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$Y(c) \perp \!\!\!\perp C | \textbf {L}$\end{document} for all \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} (Hernán and Robins, 2006a). Under this assumption, we have that
+ (3.1) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.1} E\{Y(c)\} = E \{ E(Y |\textbf{L}, C=c) \}. \end{equation*}\end{document} 
+
+
+3.1 Normal mixed effects model
+We will first focus on outcome regression models that postulate that, in each center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document},
+ (3.2) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.2} E(Y|\textbf{L}, C=c) = {\mathrm{expit}} (\textbf{L}'{\boldsymbol \beta} + \psi_c)= f(\textbf{L}, c; {\boldsymbol \beta}, {\boldsymbol \psi}), \end{equation*}\end{document} 
+where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}${\boldsymbol \psi } = (\psi _1, \ldots , \psi _m)$\end{document} are the center effects. For convenience, we here constrain the effects \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}${\boldsymbol \beta }$\end{document} of patient-specific covariates on outcome to be equal across all centers, but this can in principle be checked (size permitting) or relaxed by including interactions with center. Once estimates \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(\hat {\boldsymbol \beta }, \hat {\boldsymbol \psi })$\end{document} for \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$({\boldsymbol \beta }, {\boldsymbol \psi })$\end{document} have been obtained, it follows from (3.1) that the potential full population risk can be estimated as follows (Hernán and Robins, 2006a):
+ (3.3) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.3} \hat{E}\{Y(c)\} = \frac{1}{n} \sum_{i=1}^n {\mathrm{expit}} (\textbf{L}_i'\hat{\boldsymbol \beta} + \hat{\psi}_c) = \frac{1}{n} \sum_{i=1}^n f(\textbf{L}_i, c; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi}). \end{equation*}\end{document} 
+
+
+The evaluation of center performance is often based on Bayesian normal mixed effects (ME) models. These augment model (3.2) with a normal random effects distribution
+ (3.4) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.4} \psi_c \sim N(\mu_{\psi}, \sigma_{\psi}^2), \quad c=1,\ldots, m, \end{equation*}\end{document} 
+which assumes centers to be exchangeable in the sense that any a priori information on the relative ordering or grouping of center effects is ignored (Ohlssen and others, 2007). Here, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu _{\psi }$\end{document} is the common mean and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\sigma _{\psi }$\end{document} is the standard deviation of the center effects \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\psi _c$\end{document}, which we assume to have independent hyperpriors. Moreover, assuming that the center effects are a priori independent of the effects of patient characteristics, the joint posterior distribution of this two-level Bayesian approach is of the form
+ (3.5) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.5} p(\boldsymbol{\beta}, \boldsymbol{\psi}, \mu_{\psi}, \sigma^2_{\psi}|\textbf{y}, \textbf{L}, \textbf{C}) \propto \prod_{i=1}^n p(y_i|\boldsymbol{\beta}, \boldsymbol{\psi}, \textbf{L}, \textbf{C}) p(\boldsymbol{\psi}|\mu_{\psi}, \sigma^2_{\psi}) p(\boldsymbol{\beta}) p(\mu_{\psi}) p(\sigma^2_{\psi}). \end{equation*}\end{document} 
+This posterior is estimated using a Markov chain Monte Carlo (MCMC) algorithm, which provides values for the model parameters \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$({\boldsymbol \beta }, {\boldsymbol \psi })$\end{document} in each step. These are subsequently used to evaluate (3.3), thereby enabling us to estimate the posterior distribution of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document}.
+
+An advantage of the Bayesian over a frequentist approach based on empirical best linear unbiased predictions (Robinson, 1991) is that, by using MCMC algorithms, one can directly obtain posterior estimates and variances of even complicated transformations such as (3.3) without the need for large sample justifications, provided a sufficient number of MCMC iterations are run (O’Brien and Dunson, 2004). Prior information can be incorporated in Bayesian models through an informative prior distribution. When no such information is available, a normal distribution with large variance as non-informative prior on center level may still be hard to justify as the center effects could follow a longer-tailed distribution such as the Student's \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$t$\end{document} or even an asymmetric distribution. In particular, choosing a normal prior may shrink estimated center effects toward the center population mean \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu _{\psi }$\end{document}, especially for very small centers (Normand and others, 1997). Severe shrinkage may be problematic when reporting individual feedback to the centers, because identification of centers with deviating performance is especially important. The amount of shrinkage is related to the choice of prior, but judging the plausibility of a normal prior is difficult because it refers to center effects on the logit scale.
+
+3.2 Reducing shrinkage
+3.2.1 Clustered normal ME model
+The mixture model of Ohlssen and others (2007) forms a first approach considered to reduce shrinkage. This involves assigning the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$m$\end{document} centers to a chosen number \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$K<m$\end{document} of clusters each with their own normal random effects distribution. The model for the center level effects thus becomes
+ \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\[ \psi_c \sim N(\mu_k, \sigma_k^2) \quad \mbox{with unknown probability } p_k, \quad k=1, \ldots, K. \] \end{document} 
+It thus assigns each center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} to cluster \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k$\end{document} with probability \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$p_k$\end{document} and subsequently draws a random center effect from the normal distribution of the “cluster \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k$\end{document} population” with cluster mean \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\mu _k$\end{document} and variance \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\sigma _k^2$\end{document} within the cluster. In this process, we let each center have an a priori equal probability of belonging to each cluster without the size or performance of the clusters being predefined. When a priori knowledge of clustered center performance is available (e.g. when large centers are expected to have better facilities resulting in better performance (Saposnik and others, 2007)), it can be incorporated by giving centers a larger prior probability for specific clusters.
+
+3.2.2 FE logistic regression model with Firth correction
+Shrinkage can alternatively be reduced using maximum likelihood estimation for the FE logistic regression model (3.2). However, because of overfitting the resulting estimator (3.3) may behave erratically when there are centers with few events: besides convergence problems, there may be substantial finite sample bias and large variance (Peduzzi and others, 1996). The ME approach of Section 3.1 accommodated this by imposing a normal distribution on the center effects. Here, we will consider the Firth corrected FE method instead.
+
+Firth correction (Firth, 1993) reduces the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$O(n^{-1})$\end{document} bias of ordinary maximum likelihood estimators to the order \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$O(n^{-2})$\end{document} by maximizing the penalized likelihood function
+ (3.6) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.6} L^*({\boldsymbol \beta}, {\boldsymbol \psi}) = L({\boldsymbol\beta}, {\boldsymbol \psi}) |I({\boldsymbol \beta}, {\boldsymbol\psi})|^{1/2}, \end{equation*}\end{document} 
+instead. Here, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$|I(\cdot)|$\end{document} denotes the determinant of the Fisher information matrix of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$({\boldsymbol \beta }, {\boldsymbol \psi })$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$L(\cdot)$\end{document} is the ordinary likelihood function. Since \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$|I({\boldsymbol \beta }, {\boldsymbol \psi })|^{1/2}$\end{document} equals Jeffreys’ invariant prior, Firth correction is equivalent to penalization of the likelihood by Jeffreys’ prior (Kosmidis and Firth, 2009), suggesting that Firth corrected maximum likelihood estimates are also subject to shrinkage. However, Jeffreys’ prior is invariant under reparameterization and has the key feature of being non-informative. The latter, coupled with its defining bias reduction property, implies that it may result in less shrinkage compared with the use of a normal prior. There is evidence that it may also perform better in terms of other properties such as finiteness of the estimator and coverage of confidence intervals (Kosmidis and Firth, 2009). We will investigate this in our setting through simulations in Section 4. In supplementary material available at Biostatistics online (Sections 1.1 and 1.2), we give additional detail on the Firth correction and show how to estimate the asymptotic variance of the resulting estimate of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document}.
+
+3.3 Accounting for model extrapolation: doubly robust PS method
+All previous methods suffer from a risk of extrapolation as they require predicting for each patient how he/she would fare if the care level of a given center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} applied. When case-mix differs across centers, especially when there are strong confounders, such extrapolation may not be justified. Even models that seem to fit the observed data well may then be misspecified and imply serious model extrapolation, resulting in bias and underestimated uncertainty (Rubin, 1997). This is illustrated in supplementary material available at Biostatistics online (Figure 3) where we consider two centers with strongly differential case-mix: one center has patients older than 60 and the other does not. We find strong model extrapolation that may not get reflected in standard errors, so the user is left without warning (Rubin, 1997). Similar concerns are warranted for standard indirect standardization methods as these extrapolate stratum-specific center effects to the patients of each given center.
+
+Inverse probability weighting via PS avoids extrapolation by not relying on outcome models. For a given patient \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$i,$\end{document} the PS are defined as the vector of probabilities to belong to each given center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} on the basis of his/her baseline characteristics \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\textbf {L}_i$\end{document}. In practice, such PS can be estimated by fitting a multinomial regression model:
+ (3.7) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.7} P(C_i = c|\textbf{L}_i) = g(\textbf{L}_i, c; {\boldsymbol \gamma}, {\boldsymbol \delta}) = \begin{cases} \dfrac{1}{1+ \sum_{j=2}^m \exp(\textbf{L}'_i {\boldsymbol \delta}_j + \gamma_j)}, & c = 1, \\ \dfrac{\exp(\textbf{L}'_i {\boldsymbol \delta}_c + \gamma_c)}{1+ \sum_{j=2}^m \exp(\textbf{L}'_i {\boldsymbol \delta}_j + \gamma_j)}, & c \neq 1, \end{cases} \end{equation*}\end{document} 
+where \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$C_i$\end{document} indicates the center where patient \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$i$\end{document} was treated. Parameter estimators \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(\hat {\boldsymbol \gamma },\hat {\boldsymbol \delta })$\end{document} can be obtained via maximum likelihood, so by solving the following set of estimating equations:
+ (3.8) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.8} \frac{1}{n} \sum_{i=1}^n \left(\begin{matrix} 1 \\ \textbf{L}_i \end{matrix} \right) \{ I(C_i=c) - g(\textbf{L}_i, c; \hat{\boldsymbol \gamma}, \hat{\boldsymbol \delta})\} = \textbf{0}, \quad c =2, \ldots, m. \end{equation*}\end{document} 
+We can now estimate \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} as in (3.3), but using a weighted regression to fit the FE model (3.2) with weights equal to 1 over the PS of the observed center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g(\textbf {L}_i, C_i; \hat {\boldsymbol \gamma }, \hat {\boldsymbol \delta })$\end{document}. That this works can be seen because the weighted regression of the FE model sets
+ (3.9) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq3.9} \frac{1}{n} \sum_{i=1}^n \left(\begin{matrix} \textbf{L}_i \\ I(C_i = 1) \\ \vdots \\ I(C_i = m) \\ \end{matrix}\right) \frac{1}{g(\textbf{L}_i, C_i; \hat{\boldsymbol \gamma}, \hat{\boldsymbol \delta})} \{ Y_i - f(\textbf{L}_i, C_i; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi})\} = \textbf{0}. \end{equation*}\end{document} 
+This enables us to rewrite
+ (3.10) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{} \begin{align} \hat{E}\{Y(c)\} &= \frac{1}{n} \sum_{i=1}^n f(\textbf{L}_i, c; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi}) \nonumber \\ &= \frac{1}{n} \sum_{i=1}^n \left[ f(\textbf{L}_i, c; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi}) + \frac{I(C_i=c)}{g(\textbf{L}_i, c; \hat{\boldsymbol \gamma}, \hat{\boldsymbol \delta})} \{ Y_i - f(\textbf{L}_i, c; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi})\} \right] \label{eq3.10}\end{align} \end{document} 
+ (3.11) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*} = \frac{1}{n} \sum_{i=1}^n \left[ \frac{I(C_i=c) Y_i}{g(\textbf{L}_i, c; \hat{\boldsymbol \gamma}, \hat{\boldsymbol \delta})} + \left\{ 1 - \frac{I(C_i=c)}{g(\textbf{L}_i, c; \hat{\boldsymbol \gamma}, \hat{\boldsymbol \delta})} \right\} f(\textbf{L}_i, c; \hat{\boldsymbol \beta}, \hat{\boldsymbol \psi}) \right].\label{eq3.11} \end{equation*}\end{document} 
+These expressions show how the resulting estimator of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} is doubly robust, i.e. unbiased (in large samples) if either the outcome or the PS model holds, but not necessarily both (Robins and others, 2007). Indeed, the second term in (3.10) has population mean zero if the outcome model is correctly specified and the second term in (3.11) for a correct PS model. Furthermore, the remaining term has mean \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} under those respective assumptions. This double robustness property is attractive because it allows for misspecification of the FE model if the PS is modeled correctly. It thus, in particular, offers partial protection against false omission of interactions between center and patient characteristics. When patient mix is drastically different between centers, the resulting lack of information gets exhibited in large standard errors.
+
+Small centers can give problematically small estimated PS values, especially when its patient case-mix is very different from that of other large centers. We therefore stabilize the PS for each center by dividing all estimates \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$g(\textbf {L}_i, c; \hat {\boldsymbol \gamma }, \hat {\boldsymbol \delta })$\end{document} by the proportion of patients at that center. This stabilization does not affect the consistency nor the double robustness property of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}\{Y(c)\}$\end{document}. These properties are also not affected by applying the Firth correction when fitting the outcome model (3.2) by weighted regression, because this is a finite-sample correction. In supplementary material available at Biostatistics online (Section 1.3), we give details on how the asymptotic variance of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}\{Y(c)\}$\end{document} is estimated.
+
+4. Results
+4.1 Simulation study application: Belgian colorectal cancer register
+The Belgian cancer register collected data on colorectal cancer diagnosis and follow-up between 2006 and 2010. This fairly young register with voluntary participation has a national coverage of about \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$30\%$\end{document}. We will consider a total of 2355 patients treated in 63 centers and examine a binary outcome quality indicator with \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$22\%$\end{document} events on average. Causal inference methods on this dataset were introduced by Goetghebeur and others (2011), with descriptive statistics showing substantial heterogeneity in case-mix.
+
+We will compare the performance of the normal ME, clustered normal ME, Firth corrected FE, and doubly robust PS methods (Section 3) via simulation experiments that reflect the structure of these data. Comparisons are based on the power and type I error of center classification following the profiling technique described in Section 2.2 with \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda =20\%$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k=0.75$\end{document}. For example, the Power to detect High is the probability of classifying a center as having high risk, given that its “true” classification is high. The balance between type I error and power is determined by the values of the clinical (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda $\end{document}) and statistical (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$k$\end{document}) tolerance levels and the distribution of true alternatives, which are fixed here. Details on the simulation study are given in supplementary material available at Biostatistics online (Section 2.1). Results are shown in Table 2 and Figure 1, where it can be seen that the power to detect low-risk centers is generally smaller than the power to detect high-risk centers. This is expected because of the lower number of events and closeness to the boundary for low mortality risk. Because of shrinkage, the normal ME method has very low power and appears unable to detect many of the low-/high-risk centers. Mistakenly classifying centers as low/high mortality risk is equally rare for these methods.
+Table 2. Center classification \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$($\end{document}low/high risk or accepted\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$)$\end{document} based on \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$1000$\end{document} simulations for each regression method
+
+	Classical normal ME	Clustered normal ME	Firth corrected FE	Firth corrected doubly robust PS	
+Power (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document})	
+ To detect high	28.8	31.2	61.5	53.9	
+ To detect low	12.3	5.4	32.0	39.9	
+Type I error (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document})	
+ Low as high	0.1	0.3	2.4	6.3	
+ Accepted as high	1.2	2.0	8.6	11.8	
+Type I error (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document})	
+ High as low	0.1	0.1	0.9	2.9	
+ Accepted as low	3.2	2.1	11.2	19.1	
+Coverage of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$95\%$\end{document} CI	
+  For \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document})	95.4	87.5	93.9	89.0	
+Classification	
+ \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document} high (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$22\%$\end{document})	7.2	8.0	16.5	17.9	
+ \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document} low (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$30\%$\end{document})	6.0	3.0	16.0	22.2	
+ \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\%$\end{document} correct (L-A-H)	59.6	57.7	62.4	58.1	
+The true percentage of low- and high-risk centers is, respectively, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$30\%$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$22\%$\end{document}.
+
+
+Fig. 1. Percentage of correct classification against true potential full population risk for each center and regression method, based on the simulation study mimicking the setting of the Belgian colorectal cancer register. The vertical gray lines indicate the clinical decision limits \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(1-\lambda) E(Y)$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(1+\lambda) E(Y)$\end{document}, with \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda = 0.20$\end{document}.
+
+
+
+Interestingly, the clustered normal ME method is not performing better. This blind clustering, i.e. irrespective of center characteristics, thus requires considerable computing effort with no payback at the considered sample size. While similar in terms of power, the doubly robust PS method makes more Type I errors than the FE method because of the lower coverage of the nevertheless on average wider confidence intervals. Although the doubly robust PS method has potential value in realistic settings with strong confounding because of its robustness against model misspecification, confidence intervals with better finite sample performance are needed before routine application can be recommended. The percentage of centers that are correctly classified is similar for all methods. For the ME methods, unlike for the other methods, this is the result of classifying nearly all centers as “accepted” (see Figure 1).
+
+In supplementary material available at Biostatistics online (Section 2.1), we provide additional simulation results: Applying the Firth correction did not severely influence the results of the uncorrected FE methods, but ensured convergence in the presence of very small centers. Doubling the sample size especially increased the accuracy of the ME methods. When only one (outcome or PS) model is misspecified, we found some evidence favoring the doubly robust PS method over the FE method.
+
+4.2 Analysis of the Swedish Stroke Register
+Riks-Stroke (http://www.riks-stroke.org) is a national quality register for acute stroke, collecting data from all 90 Swedish hospitals. It has an estimated coverage of the total stroke population between \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$80\%$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$90\%$\end{document}, but there is considerable variation in coverage between hospitals. The setting is conceptually different from the cancer register, since acute stroke is treated urgently, mostly at the nearest center. The register is linked with a socio-economic database at Statistics Sweden and contains 149 778 patients with first stroke between 2001 and 2009. Centers are compared on 30-day mortality, applying the classical normal ME, the FE and the doubly robust PS method, without Firth correction as centers are no longer problematically small.
+
+Because of convergence issues with multinomial models, we build a separate logistic regression model \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$P(C=c|\textbf {L}) = {\mathrm {expit}}(\textbf {L}' \boldsymbol {\delta }_c + \gamma _c)$\end{document} per center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} and estimate the PS for individual \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$i$\end{document} treated at center \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$c$\end{document} as follows:
+ (4.1) \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}\begin{equation*}\label{eq4.1} \frac{P(C_i=c|\textbf{L}_i)}{\sum_{j=1}^m P(C_i=j|\textbf{L}_i)} = \frac{{\mathrm{expit}}(\textbf{L}_i' \boldsymbol{\delta}_c + \gamma_c)}{\sum_{j=1}^m {\rm expit}(\textbf{L}_i' \boldsymbol{\delta}_j + \gamma_j)}. \end{equation*}\end{document} 
+The classical ME method is applied separately to the cluster of small (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$<$\end{document}1000 patients), medium (1000–2000) and large (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$>$\end{document}2000) centers, to reduce the effects of shrinkage and to avoid convergence problems due to the large data size. The potential full population risk for this method is then based on the cluster-specific parameter estimates applied to the total population.
+
+While, in general, few data are missing, records on education and smoking are missing for, respectively, \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$20.8\%$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$12.8\%$\end{document} of the participants. Certain patient characteristics, like smoking status, are more likely missing for patients who were unconscious upon admission and education level is more often unknown for elderly patients. We fit complete-case regression models as they allow for missingness in the covariates to depend on the covariates themselves, so long as there is no residual dependence on the outcome (White and Carlin, 2010); it moreover avoids the need for modeling the distribution of those covariates. They will therefore return center effects that are unbiased under fairly minimal assumptions. Since the proposed estimators standardize these effects to the same reference population, selective missingness is not expected to distort comparison of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} between centers, although it may yield underestimates of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$E\{Y(c)\}$\end{document} for each center, as suggested by the comparison of complete cases (\documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$n= 101\,051$\end{document}) versus all cases in supplementary material available at Biostatistics online (Section 2.2). Supplementary material available at Biostatistics online further specifies the covariates that were included in the PS and outcome regression models. It shows that in general case-mix does not differ much across centers, except for considerable variation with respect to treatment for high blood pressure, education level, and time of admission.
+
+The fewer centers classified as low/high risk by the normal ME method are also found by the other methods. This can be seen in Figure 2, which displays the observed center-specific risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}(Y|C=c)$\end{document} (which does not depend on the analysis method) versus the model-based potential full population risk \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}\{Y(c)\}$\end{document}. The ME results show the smallest range of potential full population risk with most attenuation toward the overall risk, i.e. more shrinkage. Both FE methods classify mostly the same centers as low risk, although the doubly robust PS method classifies two additional centers as high risk (Figure 2). Because these two centers may be only borderline statistically significant, we examine the uncertainty in terms of a \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$50\%$\end{document} CI on the potential full population risk (Figure 3). We found good discrimination of low and high mortality risk in general, but the \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$50\%$\end{document} CI of some centers is close to the clinical decision limit where it becomes difficult to judge. In that case, balanced testing could help to find an optimal combination of the null and the alternative (Moerkerke and Goetghebeur, 2006). Figure 3 shows better accuracy of \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\hat {E}\{Y(c)\}$\end{document} with increasing center size, except for centers with close to zero events. Surprisingly, high mortality risks are observed mostly for medium to large centers while low mortality risks are especially detected for small to medium centers. This may partly be due to selectivity as it is known that patients dying early are less likely to be recorded in this Riks-Stroke register, which could potentially happen more frequently in smaller centers. Since size is based on the number of registered patients, a center with low coverage may come out as smaller with better performance. This underlines again the importance of complete coverage.
+Fig. 2. The observed center-specific risk versus the potential full population risk for all 90 centers of Riks-Stroke for the FE method, the doubly robust PS method, and the classical normal ME method, distinguishing between low (filled circle) and high (filled triangle) mortality risk.
+
+
+Fig. 3. The potential full population risk and corresponding \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$50\%$\end{document} confidence interval for all 90 centers of Riks-Stroke for the FE method, the doubly robust PS method, and the classical normal ME method. The vertical gray lines indicate the clinical decision limits \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(1-\lambda) \hat {E}(Y)$\end{document} and \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$(1+\lambda) \hat {E}(Y)$\end{document}, with \documentclass[12pt]{minimal}
+\usepackage{amsmath}
+\usepackage{wasysym} 
+\usepackage{amsfonts} 
+\usepackage{amssymb} 
+\usepackage{amsbsy}
+\usepackage{upgreek}
+\usepackage{mathrsfs}
+\setlength{\oddsidemargin}{-69pt}
+\begin{document}
+}{}$\lambda =0.20$\end{document}, which are used for classification of low and high (filled circles) mortality risk centers.
+
+
+
+For the doubly robust method, we observe wider confidence intervals especially for the small centers. This may be related to the generally lower efficiency of this method, but also be more honestly reflecting the uncertainty on the potential risk estimates. Unlike the other two methods, the ME method did not classify any of the very small centers as low risk. This is due to shrinkage to which especially the smallest centers are very sensitive.
+
+5. Discussion
+We have proposed and compared approaches to evaluate the performance of clinical centers via direct standardization. This involves comparing centers in terms of the potential risk if the full study population were treated at the current level of care of the given center. A key feature is that the evaluation of all centers is based on the same reference population, while each center will have treated a subset. Especially when centers can be chosen freely, this cuts bias out of the current center performance. Alternatively, indirect standardization, which is more widely used (Austin and others, 2003; Shahian and Normand, 2008), evaluates each center on its own patient population and is of particular relevance when centers tend to differ in their patient mix. Both standardizations have their virtues and in future work we will develop similar analysis strategies for indirect standardization.
+
+We have compared three statistical regression methods for direct standardization based on random or fixed center effects, the latter in combination with the Firth correction or weighting by the reciprocal of the PS to be treated in the observed center. Our primary focus on frequentist methods was motivated by the fact that they are less computer-intensive and avoid the need to specify prior distributions about which no information was available in our case studies. A crucial and unverifiable assumption for all considered methods is that the included set of baseline patient characteristics is sufficient to adjust for confounding of the center-outcome effect. This drives the variable selection at the design stage of disease registers. In case of violations, results will be biased and one may want to consider other methods such as those using instrumental variables (Hernań and Robins, 2006b).
+
+In the first case study, we found that shrinkage following traditional ME modeling results in substantial power loss compared with the suggested alternatives, especially for small centers. Although we used direct standardization, these findings correspond to those observed for indirect standardization in Austin and others (2003). The Firth corrected FE model as well as the doubly robust PS method recovered power, while maintaining convergence in the presence of very small centers. In the second case study, shrinkage was still present under the normal ME model, but disappeared using the Firth correction (see supplementary material available at Biostatistics online, Section 2.2). As a result, fewer centers were classified as low/high risk under the random compared with the fixed center effects models.
+
+In the simulation study, the Firth corrected FE method outperformed the doubly robust PS method, although differences were relatively minor. While routine application of the doubly robust PS method in its current form is not recommended, it may be of potential interest in settings with strongly differential case-mix (Shahian and Normand, 2008). In such settings, standard variable selection procedures for outcome regression models which force the center effects into the model have a tendency, as a result of multicollinearity, to exclude patient characteristics that are strongly correlated with center choice so that their effects get attributed to differences between centers. This may in turn yield model extrapolation with biased and misleadingly precise center effect estimates (Vansteelandt and others, 2010). The doubly robust PS method helps to protect against this. By also modeling the effect of patient characteristics on the center choice, strong predictors of center choice are potentially more likely to be picked up in variable selection procedures (Imbens, 2000). In future work, it will therefore be of interest to evaluate how the considered methods perform when combined with variable selection. Double robustness moreover protects against misspecification of the outcome model when the model for center choice is correct. It thereby lessens the concern for violation of the assumption of equal covariate effects across centers.
+
+Supplementary material
+Supplementary Material is available at http://biostatistics.oxfordjournals.org.
+
+Funding
+This work was supported by the Institute for the Promotion of Innovation through Science and Technology in Flanders (IWT-Vlaanderen) [to M.V.]; IAP research network from the Belgian government (Belgian Science Policy) [grant no. P07/06 to E.G. and S.V.], and the Swedish Research Council [grant no. 2012-5934 to E.G. and M.E.]. Funding to pay the Open Access publication charges for this article was provided by the Swedish Research Council.
+
+Supplementary Material
+Supplementary Data
+ Acknowledgements
+We are grateful to the ICT Department of Ghent University for assistance with our computations. Conflict of Interest: None declared.
+==== Refs
+References
+Asplund K.  Hulter Asberg K.  Appelros P.  Bjarne D.  Eriksson M.  Johansson A.  Jonsson F.  Norrving B.  Stegmayr B.  Terént A.  Wallin S.  Wester P. O.   The Riks-Stroke story: building a sustainable national register for quality assessment of stroke care International Journal of Stroke 2011 6 6 99 
+Austin P.  Alter D.  Tu J.   The use of fixed- and random-effects models for classifying hospitals as mortality outliers: a Monte Carlo assessment Medical Decision Making 2003 23 6 526 539 14672113 
+DeLong E.  Peterson E.  DeLong D.  Muhlbaier L.  Hackett S.  Mark D.   Comparing risk-adjustment methods for provider profiling Statistics in medicine 1997 16 23 2645 2664 9421867 
+Firth D.   Bias reduction of maximum likelihood estimates Biometrika 1993 80 1 27 38 
+Goetghebeur E.  Van Rossem R.  Baert K.  Vanhoutte K.  Boterberg T.  Demetter P.  De Ridder M.  Harrington D.  Peeters M.  Storme G.   Quality insurance of rectal cancer—phase 3: statistical methods to benchmark centers on a set of quality indicators, Good Clinical Practice (GCP) Belgian Health Care Knowledge Centre (KCE) 2011 1 142 and others KCE Report 161C, D/2011/10.273/40  
+Hernán M.  Robins J.   Estimating causal effects from observational data Journal of Epidemiology and Community Health 2006a 60 578 586 16790829 
+Hernán M.  Robins J.   Instruments for causal inference: an epidemiologist's dream? Epidemiology 2006b 17 4 360 372 16755261 
+Imbens G.   The role of the propensity score in estimating dose-response functions Biometrika 2000 87 3 706 710 
+Kosmidis I.  Firth D.   Bias reduction in exponential family nonlinear models Biometrika 2009 96 4 793 804 
+Moerkerke B.  Goetghebeur E.   Selecting significant differentially expressed genes from the combined perspective of the null and the alternative Journal of Computational Biology 2006 13 9 1513 1531 17147475 
+Neyman J.  Scott E.   Consistent estimates based on partially consistent observations Econometrica 1948 16 1 1 32 
+Normand S. L.  Glickman M.  Gatsonis C.   Statistical methods for profiling providers of medical care: issues and applications Journal of the American Statistical Association 1997 92 439 803 814 
+O'Brien S.  Dunson D.   Bayesian multivariate logistic regression Biometrics 2004 60 739 746 15339297 
+Ohlssen D.  Sharples L.  Spiegelhalter D.   Flexible random-effects models using Bayesian semi-parametric models: applications to institutional comparisons Statistics in Medicine 2007 26 2088 2112 16906554 
+Peduzzi P.  Concato J.  Kemper E.  Holford T.  Feinstein A.   A simulation study of the number of events per variable in logistic regression analysis Journal of Clinical Epidemiology 1996 49 12 1373 1379 8970487 
+Robins J.  Sued M.  Lei-Gomez Q.  Rotnitzky A.   Comment: performance of double-robust estimators when inverse probability weights are highly variable Statistical Science 2007 22 4 544 559 
+Robinson G. K.   That BLUP is a good thing: the estimation of random effects Statistical Science 1991 6 1 15 32 
+Rubin D.   Estimating causal effects from large data sets using propensity scores Annals of Internal Medicine 1997 127 8S 757 763 9382394 
+Saposnik G.  Baibergenova A.  O'Donnell M.  Hill M. D.  Kapral M. K.  Hachinski V.   Stroke Outcome Research Canada (SORCan) Working Group Hospital volume and stroke outcome does it matter? Neurology 2007 69 11 1142 1151 17634420 
+Shahian D.  Normand S. L.   Comparison of risk-adjusted hospital outcomes Circulation 2008 117 1955 1963 18391106 
+Spiegelhalter D.   Funnel plots for comparing institutional performance Statistics in medicine 2005 24 8 1185 1202 15568194 
+Vansteelandt S.  Bekaert M.  Claeskens G.   On model selection and model misspecification in causal inference Statistical Methods in Medical Research 2010 21 1 7 30 21075803 
+White I.  Carlin J.   Bias and efficiency of multiple imputation compared with complete-case analysis for missing covariate values Statistics in medicine 2010 29 28 2920 2931 20842622
