@@ -21,7 +21,7 @@ Follow the documentation from PLoS API website <http://api.plos.org/solr/example
 bulk downloading
 ftp://ftp.ncbi.nlm.nih.gov/pub/pmc/
 
-```{r, eval=FALSE}
+```{r,echo=FALSE,  eval=FALSE}
 library("rplos")
 # Get only full article DOIs
 id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
@@ -29,13 +29,13 @@ id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:f
 
 Specify the "limit" to be 12329, then the data part for "id" contains the ID and publication date of the paper of our interest.
 
-```{r, eval=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 # id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0, limit = id$meta[1, 1])
 ```
 
 To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman. 
 
-```{r, eval=FALSE}
+```{r,echo=FALSE,  eval=FALSE}
 dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis (LDA)","bootstrap","maximum likelihood","EM algorithm","MCMC","neural network","support vector machine (SVM)","clustering","principal component","independent component","random forest","graphical model")
 ```
 
@@ -196,7 +196,7 @@ models %>%
   ylab("Frequency of word in speech")
 ```
 
-```{r, eval=FALSE}
+```{r, echo=FALSE, eval=FALSE}
 f_word = file_word[, colnames(file_word) %in% c("datetimestamp", "id","word","Year")]
 filefreq = f_word %>%
   group_by(id) %>%
@@ -206,7 +206,7 @@ filefreq = f_word %>%
 # docu = DocumentTermMatrix(tidy(as.data.frame(as.matrix(f_word))))
 ```
 
-```{r}
+```{r, echo=FALSE, eval=FALSE}
 t_file = DocumentTermMatrix(file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = anostopword))
 library("topicmodels")
 lda = LDA(t_file, 5)
@@ -243,7 +243,7 @@ Besides the "rplos" R package for summary statistics, we want to conduct text an
 
 We use "rplos" to do some exploritory data analysis. To use regular expression for further search, we create a dictionary for common statistical methods. We use "The Elements of Statistical Learning - Data Mining, Inference, and Prediction" second edition, by Trevor Hastie, Robert Tibshirani, Jerome Friedman, as a reference. The words from the dictionary are counted and the barplots below show the usage frequency of each word.
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval=FALSE}
 library("rplos")
 dic = list('linear regression', 'Lasso', 'ridge regression', 'bootstrap', 'maximum likelihood', 'EM algorithm', 'MCMC', 'neural network', 'SVM', 'clustering', 'principal component', 'independent component', 'random forest', 'graphical model')
 length(dic)
@@ -282,7 +282,7 @@ p + coord_flip() + labs(x = "count in paper", y = "statistical topics", fill = "
 # a$plot + coord_flip()
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval=FALSE}
 ab = rep(NA, length(dic))
 for (i in 1:length(dic)){
   id= plosabstract(q = dic[i], fl='id,title')
@@ -297,7 +297,7 @@ p = ggplot(data=df2, aes(x= reorder(dic3, -ab2), y=ab2, fill = reorder(dic3, -ab
 p + coord_flip() + labs(x = "count in abstract", y = "statistical topics", fill = "statistical topics") + geom_text(aes(label = ab2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) 
 ```
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, eval=FALSE}
 countpermonth = matrix(rep(NA, 12*10*length(dic)), ncol = 10)
 for (i in 1:length(dic)){
   i = 1
