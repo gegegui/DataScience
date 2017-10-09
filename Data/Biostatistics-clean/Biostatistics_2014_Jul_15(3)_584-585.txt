@@ -1,0 +1,32 @@
+
+BiostatisticsBiostatisticsbiostsbiostsBiostatistics (Oxford, England)1465-46441468-4357Oxford University Press 10.1093/biostatistics/kxu022kxu022ArticlesCorrigendum: Differential expression analysis of RNA-seq data at single-base resolution Frazee Alyssa C. Hansen Kasper D. Leek Jeffrey T. *Department of Biostatistics, The Johns Hopkins University Bloomberg School of Public Health, 615 North Wolfe Street, Baltimore, MD 21205, USASabunciyan Sarven Department of Pediatrics, The Johns Hopkins University School of Medicine, 600 North Wolfe Street, Baltimore, MD 21287, USAIrizarry Rafael A. Dana Farber Cancer Institute, 450 Brookline Avenue, Boston, MA 02215, USA* To whom correspondence should be addressed. jtleek@gmail.com7 2014 7 2014 15 3 584 585 © The Author 2014. Published by Oxford University Press.2014This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/3.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.
+(10.1093/biostatistics/kxt053)
+
+1. Statistical significance: updated definition of \documentclass[12pt]{minimal}
+}{}$\bar {s}$\end{document}
+Section 3.3 of the main manuscript details the permutation \documentclass[12pt]{minimal}
+}{}$p$\end{document}-value procedure implemented in the DER Finder method. Incorrect definitions were given for \documentclass[12pt]{minimal}
+}{}$\bar {s}_r$\end{document} and \documentclass[12pt]{minimal}
+}{}$\bar {s}_{\rho }^0$\end{document}. The correct definitions are:
+ \documentclass[12pt]{minimal}
+}{}\[ \bar{s}_r =\dfrac{\sum_{l \in DER_r} s(l)}{\text{length}(DER_r)}\hbox{ and } \bar{s}_{\rho}^0 = \dfrac{\sum_{l \in DER^0_{\rho}} s^0(l)}{\text{length}(DER^0_{\rho})}. \] \end{document} 
+
+
+The original manuscript incorrectly presented these region-level test statistics as sums, when they should have been presented as averages. This correction does not affect the manuscript’s results: the correct region-level test statistics were used in the analysis; only the written definition of the region-level test statistics was incorrect.
+
+2. Updated Figure 2(b)
+An incorrect version of Figure 2(b) was presented in the original manuscript. The DER presented in Figure 2(b) actually does overlap an annotated exon (as demonstrated in the bottom panel of the original figure!), which contradicts the message of the figure caption. The corrected version of Figure 2 appears below.
+Figure 2. Cases where DER Finder correctly calls differential expression and annotate-then-identify methods do not. (a) Example of an exon (from gene EIF1AY , Ensembl exon id ENSE00001435537) whose location appears to be mis-annotated, leading EdgeR and DESeq to underestimate the exon’s abundance and therefore incorrectly call this exon not differentially expressed. (b) Example of a differentially expressed region (\documentclass[12pt]{minimal}
+}{}$q = 0.001$\end{document}) falling outside of an annotated exon, which can be found by DER Finder but not by EdgeR or DESeq. Though there are no annotated exons in this region, we believe this finding is more than noise because it is supported by the following annotated ESTs: CT001420, BF810102, BF369919, BF858017, CV424981 (GenBank accession numbers). Top panels: single-base resolution coverage (on log2 scale). Middle panels: \documentclass[12pt]{minimal}
+}{}$t$\end{document}-statistics from linear model fit by DER Finder. Bottom panels: exon locations (denoted by purple boxes) and state calls from DER Finder: gray \documentclass[12pt]{minimal}
+}{}$=$\end{document} not expressed, black \documentclass[12pt]{minimal}
+}{}$=$\end{document} equally expressed, red \documentclass[12pt]{minimal}
+}{}$=$\end{document} overexpressed in men. This figure appears in colour online.
+
+
+
+3. Correction to Supplemental material
+We note that there is also a published correction to the supplement that was originally published with this manuscript.
+
+Supplementary Material
+Supplementary Data

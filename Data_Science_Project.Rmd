@@ -49,7 +49,7 @@ plosabstract(q = 'neural network', fl='id,title', limit = 5)
 ```{r, eval=FALSE}
 # select paper with key words in method part
 out <- highplos(q='regression', hl.fl = 'Materials and Methods', rows=130)
-highbrow(out)
+# highbrow(out)
 ```
 
 ```{r, eval=FALSE}
@@ -58,6 +58,7 @@ plosword(list('regression', 'neural network'), vis = 'TRUE')
 
 # plot through time
 pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 59)
+pl_t = plot_throughtime(terms = dic, limit = 59)
 ```
 
 
@@ -84,7 +85,7 @@ Calculate the most frequent words using group_by, count, and arrange
 
 Only keep words in this list of English words: https://github.com/dwyl/english-words/blob/master/words.txt.zip and remove the 20 most frequent words.
 
-Cast the tidy obect into a DocumentTermMatrix object.
+Cast the tidy object into a DocumentTermMatrix object.
 
 Use the LDA command in the topicmodels package to fit a topic model using 3 and 10 topics.
 
@@ -109,8 +110,8 @@ library(tm)
 ```
 
 ```{r, eval=FALSE}
-library("tm")
-dsource = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/Biostatistics")
+dsource = DirSource(directory = "/Users/gege/Downloads/PLoS_Comput_Biol")
+# dsource = DirSource(directory = "/Users/gege/Dropbox/graduate/DataScience/project/Data/Biostatistics-clean")
 file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
 # %>% DocumentTermMatrix(control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = TRUE))
 
@@ -124,7 +125,19 @@ dic = scan("/Users/gege/Dropbox/graduate/DataScience/project/Data/words.txt", ch
 file_words = tidyfile %>%
   unnest_tokens(word, text) %>%
   anti_join(stop_words) 
+
+fileunnest = tidyfile %>% unnest_tokens(word, text) 
+
+file_count = as.vector(table(file_words[, colnames(file_words) %in% "word"]))
+file_count2 = rownames(as.matrix(table(file_words[, colnames(file_words) %in% "word"])))
+word_freq = file_count2[order(file_count, decreasing = T)][1:20]
+
+wholevol = unique(fileunnest$word)
 file_word = file_words[file_words$word %in% dic, ]
+antistopword = unique(file_word$word)
+
+anostopword = union(setdiff(wholevol, antistopword), word_freq)
+
 ```
 
 see how the appearance of a word changes over time:
@@ -191,11 +204,25 @@ filefreq = f_word %>%
   filter(n > 5)
 
 # docu = DocumentTermMatrix(tidy(as.data.frame(as.matrix(f_word))))
-t_file = DocumentTermMatrix(file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = FALSE))
-library("topicmodels")
-lda = LDA(t_file, 30)
-lda_inf = posterior(lda)
 ```
+
+```{r}
+t_file = DocumentTermMatrix(file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = anostopword))
+library("topicmodels")
+lda = LDA(t_file, 5)
+lda_inf = posterior(lda)
+article = lda_inf[[2]]
+term = lda_inf[[1]]
+term_pos = matrix(rep(NA, 20 * nrow(term)), nrow = nrow(term))
+for (i in 1:nrow(term)){
+  i = 1
+  dat = term[i, ]
+  name = colnames(term)
+  or = order(dat, decreasing = T)
+  wo = name[or[1:10]]
+}
+```
+
 
 
 \pagebreak
@@ -228,8 +255,59 @@ a$plot
 # pl_t = plot_throughtime(terms = c('regression', 'neural network'), limit = 59)
 ```
 
-```{r, echo = FALSE, fig_width = 8, fig_height = 4}
+```{r, echo = FALSE, fig_width = 8, fig_height = 4, eval=FALSE}
 b$plot
+```
+
+```{r, echo = FALSE}
+library("rplos")
+dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis","bootstrap","maximum likelihood","MCMC","neural network","support vector machine","clustering","principal component","independent component","random forest","graphical model", "Kaplan", "Cox proportional")
+# "EM algorithm",
+
+s = rep(NA, length(dic))
+for (i in 1:length(dic)){
+  id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
+  s[i] = id$meta$numFound
+}
+
+dic2 = dic[order(s)]
+s2 = sort(s)
+df = data.frame(dic2, s2)
+
+library("ggplot2")
+p = ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2, fill = reorder(dic2, -s2))) + geom_bar(stat="identity")
+p + coord_flip() + labs(x = "count in paper", y = "statistical topics", fill = "statistical topics") + geom_text(aes(label = s2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) 
+
+# a = plosword(dic, vis = 'TRUE')
+# a$plot + coord_flip()
+```
+
+```{r, echo = FALSE}
+ab = rep(NA, length(dic))
+for (i in 1:length(dic)){
+  id= plosabstract(q = dic[i], fl='id,title')
+  ab[i] = id$meta$numFound
+}
+
+dic3 = dic[order(ab)]
+ab2 = sort(ab)
+df2 = data.frame(dic3, ab2)
+
+p = ggplot(data=df2, aes(x= reorder(dic3, -ab2), y=ab2, fill = reorder(dic3, -ab2))) + geom_bar(stat="identity")
+p + coord_flip() + labs(x = "count in abstract", y = "statistical topics", fill = "statistical topics") + geom_text(aes(label = ab2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) 
+```
+
+```{r, echo = FALSE}
+countpermonth = matrix(rep(NA, 12*10*length(dic)), ncol = 10)
+for (i in 1:length(dic)){
+  i = 1
+  count_m = facetplos(q='alcohol', facet.date='publication_date', facet.date.start="2007-01-01T00:00:00Z", facet.date.end="2007-02-01T00:00:00Z", facet.date.gap='+1DAY')
+  
+  count_m = facetplos(q='*:*', facet.date='publication_date', facet.date.start="2007-01-01T00:00:00Z", facet.date.end="2007-02-01T00:00:00Z", facet.date.gap='+1DAY')
+  
+count_m
+}
+
 ```
 
 Latent Dirichlet Allocation (LDA) is the common algorithm used for distinguishing topics by text mining. R has several packages based on NLP to solve this kind of problem. 

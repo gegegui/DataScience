@@ -1,0 +1,396 @@
+
+BiostatisticsBiostatisticsbiostsbiostsBiostatistics (Oxford, England)1465-46441468-4357Oxford University Press 10.1093/biostatistics/kxv010kxv010ArticlesA stochastic transcriptional switch model for single cell imaging data Hey Kirsty L. Department of Statistics, University of Warwick, Coventry CV4 7AL, UKMomiji Hiroshi Warwick Systems Biology, University of Warwick, Coventry CV4 7AL, UKFeatherstone Karen Davis Julian R.E. Centre for Endocrinology and Diabetes, University of Manchester, Manchester M13 9PT, UKWhite Michael R.H. Systems Biology Centre, University of Manchester, Manchester M13 9PL, UKRand David A. Warwick Systems Biology, University of Warwick, Coventry CV4 7AL, UKFinkenstädt Bärbel *Department of Statistics, University of Warwick, Coventry CV4 7AL, UK* To whom correspondence should be addressed. B.F.Finkenstadt@warwick.ac.uk10 2015 26 3 2015 26 3 2015 16 4 655 669 12 8 2014 4 12 2014 21 2 2015 © The Author 2015. Published by Oxford University Press.2015This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.Gene expression is made up of inherently stochastic processes within single cells and can be modeled through stochastic reaction networks (SRNs). In particular, SRNs capture the features of intrinsic variability arising from intracellular biochemical processes. We extend current models for gene expression to allow the transcriptional process within an SRN to follow a random step or switch function which may be estimated using reversible jump Markov chain Monte Carlo (MCMC). This stochastic switch model provides a generic framework to capture many different dynamic features observed in single cell gene expression. Inference for such SRNs is challenging due to the intractability of the transition densities. We derive a model-specific birth–death approximation and study its use for inference in comparison with the linear noise approximation where both approximations are considered within the unifying framework of state-space models. The methodology is applied to synthetic as well as experimental single cell imaging data measuring expression of the human prolactin gene in pituitary cells.
+
+Bayesian hierarchical modelBirth and death processesGene expressionLinear noise approximationParticle GibbsReversible jump MCMCState-space modelsStochastic reaction networks
+1. Introduction
+In single cells, gene expression is made up of fundamentally stochastic processes (Raj and Van Oudenaarden, 2008) due to intrinsic and extrinsic variation. Here, intrinsic variability refers to the variation observed between different realizations of identical biological systems within identical environments due to the probabilistic nature of the occurrence of molecular reactions. Extrinsic variability is the intercellular variability of gene expression caused by randomness in molecular machinery within individual cells (Elowitz and others, 2002). Light microscopy technology used to image reporter genes has proved successful for studying stochastic temporal expression dynamics in individual live cells (Spiller and others, 2010). The reporter gene is inserted into cell DNA and engineered to be under the control of a native gene promoter. An important statistical problem arising from the use of reporter constructs, such as fluorescent and luminescent proteins, is to infer the unobserved transcriptional activity of the reporter, which can be related to the activity of the native gene (Finkenstädt and others, 2008). This activity is highly variable, occurring in stochastic pulses for many genes, including prolactin (Harper and others, 2011; Suter and others, 2011). Here we introduce a general stochastic switch model (SSM), to study pulsatile gene expression dynamics within single cells.
+
+Switch models have previously been considered for inferring transcription factor interactions (Sanguinetti and others, 2009; Opper and Sanguinetti, 2010) and reconstructing transcription dynamics (Finkenstädt and others, 2008; Harper and others, 2011). In general, binary states are assumed (Peccoud and Ycart, 1995; Larson and others, 2009; Suter and others, 2011; Sanchez and others, 2013), where transcription can take only two values corresponding to the gene being active or inactive. Although the binary switch has a simple biological interpretation, the restriction to two states may not capture the full range of cellular activity as other events may influence gene regulation. The multi-state model of Jenkins and others (2013) was able to describe a wide range of observed dynamic patterns in gene expression including oscillatory behavior with asymmetric cycles of varying amplitude. It is the aim of this study to embed the multi-state switch model within a stochastic reaction network (SRN) for single cells whilst also introducing a measurement process to fit single cell imaging time series. Inference is challenging due to the intractability of the likelihood and we consider two approximations, the linear noise approximation (LNA) (van Kampen, 1961) and an alternative approximation that is derived specifically for the SSM. We introduce the biological motivation and model in Section 2. A brief overview of SRNs and their associated approximations is given in Section 3 with inferential techniques discussed in Section 4. Section 5 presents a simulation study while an application to data is presented in Section 6.
+
+2. A stochastic switch model
+The basic model of gene expression (Paulsson, 2005) describing the transfer of information encoded within DNA to the creation of protein molecules is given by
+ (2.1) \documentclass[12pt]{minimal}
+}{}\[\mathrm {DNA} \xrightarrow [\quad \quad ]{\beta (t) } \mathrm {mRNA},\quad \quad \mathrm {mRNA} \xrightarrow [\quad \quad ]{\delta _m} \emptyset ,\]\end{document} 
+ (2.2) \documentclass[12pt]{minimal}
+}{}\[\mathrm {mRNA} \xrightarrow [\quad \quad ]{\alpha } \mathrm {mRNA} + \mathrm {Protein}, \quad \quad \mathrm {Protein} \xrightarrow [\quad \quad ]{\delta _p } \emptyset ,\]\end{document} 
+where the superscript for each reaction denotes the corresponding reaction rate. Following Jenkins and others (2013), we model transcription by a piecewise constant function, \documentclass[12pt]{minimal}
+}{}$\beta (t)= \beta _i$\end{document} for \documentclass[12pt]{minimal}
+}{}$t \in [s_{i-1}, s_{i})$\end{document}, where changes in rates are associated with unobserved transcriptional events occurring at unknown switch times \documentclass[12pt]{minimal}
+}{}$s_1,\ldots , s_{k}$\end{document}. The rates of translation, \documentclass[12pt]{minimal}
+}{}$\alpha$\end{document}, and degradation, \documentclass[12pt]{minimal}
+}{}$\delta _m$\end{document} and \documentclass[12pt]{minimal}
+}{}$\delta _p$\end{document}, are assumed constant. Figure 1 gives a diagrammatic representation of how the measurement process, via reporter genes, relates to native gene expression. Our aim is to backcalculate from light intensity measurements, to reporter protein levels, back to reporter mRNA levels and finally to the transcriptional dynamics of the reporter, which will relate to the transcriptional dynamics of the native gene since the reporter is under the control of the native gene promoter. Figure 2 shows fluorescent time course data for 15 randomly selected cells from samples of immature and adult rat pituitary tissue. The target gene for these data is the prolactin gene whose regulation is of physiological interest due to its important roles in mammalian reproduction and also its frequent over-production by pituitary adenomas (Featherstone and others, 2012). For further details of the reporter construct used and associated experimental framework; see Semprini and others (2009), Harper and others (2010) and Featherstone and others (2011). We assume that the observed fluorescent time course, \documentclass[12pt]{minimal}
+}{}$Y$\end{document}, are indirect measurements of reporter protein levels, \documentclass[12pt]{minimal}
+}{}$Y = \kappa P + \epsilon$\end{document}, \documentclass[12pt]{minimal}
+}{}$\epsilon \sim \hbox {{\textit {N}}}(0, \sigma _{\epsilon }^2)$\end{document}, and are conditionally independent given the latent states, \documentclass[12pt]{minimal}
+}{}${\textbf{X}}:= (M, P)^{\rm T}$\end{document}, consisting of the unobserved reporter species, mRNA (\documentclass[12pt]{minimal}
+}{}$M$\end{document}) and protein (\documentclass[12pt]{minimal}
+}{}$P$\end{document}). Consequently, the system follows a state-space model (Figure 3) where \documentclass[12pt]{minimal}
+}{}${\textbf{X}}$\end{document} is a Markov jump process given in the following section.
+Fig. 1. A diagrammatic representation of the transfer of information from DNA to protein through transcription and translation and its relation to the measurement process through a reporter gene construct. Specifically, the cell DNA is engineered such that the reporter gene is regulated through the same regulatory sequences as the gene of interest. Thus, transcription of the reporter gene and target gene will be highly coupled. Once transcribed, the mRNA molecules will either degrade or be translated into proteins. Note that there is no longer any coupling between the native and reporter species after transcription and thus the remaining reactions occur at differing rates. The abundance of reporter protein can be measured indirectly through microscopy techniques. Consequently, the aim of this methodology is to backcalculate from reporter protein levels, to reporter mRNA levels and infer the reporter transcriptional dynamics. This will then give a fair representation of the native transcriptional dynamics.
+
+
+Fig. 2. Fluorescent time course data of 15 randomly selected cells from (a) an immature (post-natal day 1.5) rat pituitary tissue slice and (b) a mature (adult male) rat pituitary slice. Measurements were taken every 15 min over 42 h.
+
+
+Fig. 3. A graphical representation of the state-space model for single cell imaging data. The arrows depict conditional dependencies between nodes, where square nodes are observed variables and circular nodes are unobserved. The observed light intensities, \documentclass[12pt]{minimal}
+}{}$Y_t$\end{document}, are conditionally independent given the unobserved latent states \documentclass[12pt]{minimal}
+}{}${\textbf{X}}_t:= (M_t, P_t)$\end{document} consisting of reporter mRNA, \documentclass[12pt]{minimal}
+}{}$M_t$\end{document}, and reporter protein, \documentclass[12pt]{minimal}
+}{}$P_t$\end{document}, levels at time \documentclass[12pt]{minimal}
+}{}$t$\end{document}. Moreover, the latent states follow a Markov jump process with \documentclass[12pt]{minimal}
+}{}${\textbf{X}}_t$\end{document} depending only upon the previous states \documentclass[12pt]{minimal}
+}{}${\textbf{X}}_{t-1}$\end{document}.
+
+
+
+3. Stochastic reaction networks and their approximations
+SRNs can be used to model systems of reactions such as (2.1) and (2.2) by Markov jump processes (MJPs). Consider a system of \documentclass[12pt]{minimal}
+}{}$\nu$\end{document} stochastic reactions involving \documentclass[12pt]{minimal}
+}{}$D$\end{document} molecular species, \documentclass[12pt]{minimal}
+}{}${\textbf{X}}=(X_1,\ldots , X_D)^{\rm T}$\end{document}, in a well-mixed environment of volume \documentclass[12pt]{minimal}
+}{}$\Omega$\end{document}. The stochastic process can be represented by the set of reactions, \documentclass[12pt]{minimal}
+}{}${\mathcal P} {\textbf{X}} \xrightarrow {{\textbf{h}}} {\mathcal Q} {\textbf{X}}$\end{document}, for matrices \documentclass[12pt]{minimal}
+}{}${\mathcal P}$\end{document} and \documentclass[12pt]{minimal}
+}{}${\mathcal Q}$\end{document}. The vector of hazards \documentclass[12pt]{minimal}
+}{}${\textbf{h}}$\end{document}, describes the rate at which each reaction occurs and in general will depend on \documentclass[12pt]{minimal}
+}{}${\textbf{x}}$\end{document}, the current state of the random vector \documentclass[12pt]{minimal}
+}{}${\textbf{X}}$\end{document}, and kinetic rates \documentclass[12pt]{minimal}
+}{}$\theta$\end{document}. The vectors \documentclass[12pt]{minimal}
+}{}${\textbf{v}}_j$\end{document} of the stoichiometric matrix \documentclass[12pt]{minimal}
+}{}$S:={\mathcal Q} - {\mathcal P}:=[{\textbf{v}}_1,\ldots , {\textbf{v}}_{\nu }]$\end{document} describe the change in state for each reaction \documentclass[12pt]{minimal}
+}{}$j$\end{document}. By the law of mass action, the hazards are given by
+ (3.1) \documentclass[12pt]{minimal}
+}{}\[h_j({\textbf{x}}, \theta _j) = \theta _j \prod _{k=1}^D \left ( \begin {matrix}x_k\\ {\mathcal P}_{jk} \end {matrix}\right ) \quad {\rm for} \ j = 1,\ldots , \nu ,\]\end{document} 
+where \documentclass[12pt]{minimal}
+}{}${\mathcal P}_{jk}$\end{document} is the \documentclass[12pt]{minimal}
+}{}$jk$\end{document}th element of \documentclass[12pt]{minimal}
+}{}${\mathcal P}$\end{document} and \documentclass[12pt]{minimal}
+}{}$x_k$\end{document} is the \documentclass[12pt]{minimal}
+}{}$k$\end{document}th element of the state vector \documentclass[12pt]{minimal}
+}{}${\textbf{x}}$\end{document}. Given the system is currently in state \documentclass[12pt]{minimal}
+}{}${\textbf{x}}$\end{document}, the probability of reaction \documentclass[12pt]{minimal}
+}{}$j$\end{document} occurring so that the state vector becomes \documentclass[12pt]{minimal}
+}{}${\textbf{x}} + {\textbf{v}}_j$\end{document}, in the next infinitesimal \documentclass[12pt]{minimal}
+}{}$dt$\end{document} time is given by \documentclass[12pt]{minimal}
+}{}$h_j({\textbf{x}}, \theta _j)dt$\end{document}. From this, it is straightforward to derive that the next reaction to occur will be at time \documentclass[12pt]{minimal}
+}{}$t + \tau$\end{document} and of type \documentclass[12pt]{minimal}
+}{}$j$\end{document} with probability, \documentclass[12pt]{minimal}
+}{}$\mathbb {P}({\textbf{X}}(t + \tau ) = {\textbf{x}} + {\textbf{v}}_j\,|\,{\textbf{X}}(t)={\textbf{x}})={\rm e}^{-h_0({\textbf{x}}, \theta )\tau }h_j({\textbf{x}}, \theta _j),$\end{document} where \documentclass[12pt]{minimal}
+}{}$h_0({\textbf{x}}, \theta ) = \sum _{j=1}^{\nu }h_j({\textbf{x}}, \theta _j)$\end{document}. This identity forms the basis of a stochastic simulation algorithm (Gillespie, 1977), from which we can generate exact sample paths of a given system. If complete data on all species and reactions were available, inference would be straightforward since the likelihood is then given by
+ (3.2) \documentclass[12pt]{minimal}
+}{}\[f({\textbf{x}}\, |\, \theta ) = \prod _{i=1}^n h_{j_i}({\textbf{x}}(t_i), \theta _{j_i}) \exp \left ( -\sum _{i=0}^n h_{0}({\textbf{x}}(t_i), \theta )[t_{i+1}-t_i]\right ) ,\]\end{document} 
+where \documentclass[12pt]{minimal}
+}{}$n$\end{document} is the number of reactions that take place, \documentclass[12pt]{minimal}
+}{}$j_1,\ldots ,j_n$\end{document} is the sequence of reaction types, and \documentclass[12pt]{minimal}
+}{}$t_1,\ldots ,t_n$\end{document} are the associated timings of each reaction. However, in molecular biology, complete data paths are not available and commonly only a subset of species are measured indirectly with error.
+
+One approach for exact inference on partially observed SRNs is to integrate out the latent reaction paths and recent attention has been focused on evaluating these high-dimensional integrals in a computationally efficient way. Andrieu and others (2010) show how particle Markov chain Monte Carlo (MCMC) methods can be used to perform inference on MJPs, in particular the stochastic kinetic Lotka–Volterra model, although this was found to perform poorly in low measurement error scenarios (Golightly and Wilkinson, 2011). Other approaches for inference on the exact system include a simulation-based method (Amrein and Künsch, 2012), a reversible jump (RJ) MCMC method (Boys and others, 2008), an implementation of uniformization (Choi and Rempala, 2012) and the MCEM\documentclass[12pt]{minimal}
+}{}$^2$\end{document} of Daigle and others (2012) which makes use of rare simulation techniques. Two recent examples that also consider real data are the delayed acceptance MCMC method of Golightly and others (2014) applied to epidemic data and the dynamic prior propagation method of Zechner and others (2014) who model an artificially controlled gene expression system in yeast. All these exact inference techniques assume a known scaling factor, \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document}, of 1 and often also known measurement error. Moreover, the techniques used are often computationally burdensome with respect to the size of data we consider (Figure 2). In a molecular biology framework, experimental methods will invariably result in a measurement process with both unknown error and scaling as the direct number of molecules is unobservable. One approach is to rescale the data based on additional experiments (Zechner and others, 2014). The incorporation of both unknown measurement error and scaling is non-trivial and we will consider this in some detail.
+
+In our study we consider the feasibility of approximating the underlying MJP by approximating the transition densities, \documentclass[12pt]{minimal}
+}{}$\mathbb {P}({\textbf{x}}, t):= \mathbb {P}({\textbf{X}}(t) = {\textbf{x}}\, |\, {\textbf{X}}(0) = {\textbf{x}}_0)$\end{document}, which solve the, rarely tractable, chemical master equation
+ (3.3) \documentclass[12pt]{minimal}
+}{}\[\frac {{\rm d}}{{\rm d} t}\mathbb {P}({\textbf{x}},t) = \sum _{j=1}^{\nu }h_j({\textbf{x}}-{\textbf{v}}_j, \theta _j) \mathbb {P}({\textbf{x}}-{\textbf{v}}_j, t) -h_j({\textbf{x}}, \theta _j)\mathbb {P}({\textbf{x}},t), \quad \mathbb {P}({\textbf{x}},0) = {\rm \mathbb {I}}[{\textbf{x}}={\textbf{x}}_0].\]\end{document} 
+The reader is referred to Appendix A (see supplementary material available at Biostatistics online) for detailed derivations of each approximation.
+
+We first note that, in the macroscopic limit, a deterministic approximation, \documentclass[12pt]{minimal}
+}{}${\textbf{X}}^{{\rm D}}$\end{document}, is given by
+ (3.4) \documentclass[12pt]{minimal}
+}{}\[\frac {{\rm d} {\textbf{X}}^{{\rm D}}}{{\rm d} t} = A({\textbf{X}}^{{\rm D}}):= \sum _{j=1}^{\nu } {\textbf{v}}_j h_j({\textbf{X}}^{{\rm D}}, \theta _j) = S {\textbf{h}}({\textbf{X}}^{{\rm D}}, \theta ), \quad {\textbf{X}}^{{\rm D}}(0) = {\textbf{x}}_0,\]\end{document} 
+which may be appropriate for modeling high-level aggregate data with negligible intrinsic variability as in Jenkins and others (2013).
+
+At the mesoscopic level there are two approximations that have been used to model SRNs, namely the chemical Langevin equation (CLE) and the LNA, both of which give rise to systems of SDEs. The LNA is a linearization of the master equation and always results in analytical transition densities. Derivations of varying degrees of rigour can be found (van Kampen, 1961; Wallace and others, 2012) with Kurtz (1971) deriving it as a central limit theorem for the underlying MJP. The LNA is specified by
+ (3.5) \documentclass[12pt]{minimal}
+}{}\[{\textbf{X}}^{{\rm L}}(t)= \phi (t) + \Omega ^{-1/2}\xi (t),\]\end{document} 
+ (3.6) \documentclass[12pt]{minimal}
+}{}\[\frac {{\rm d}\phi }{{\rm d} t}= A(\phi (t)), \quad {\rm d}\xi = J(\phi (t)) \xi (t) \,{\rm d} t + {B(\phi (t))}\,{\rm d} W_t,\]\end{document} 
+where \documentclass[12pt]{minimal}
+}{}$\phi$\end{document} is the macroscopic ODE solution, \documentclass[12pt]{minimal}
+}{}${\rm d} W_t$\end{document} are independent Wiener processes, \documentclass[12pt]{minimal}
+}{}$A$\end{document} is defined as in (3.4), \documentclass[12pt]{minimal}
+}{}$B:= \sqrt {S {\rm {\rm diag}} ({\textbf{h}}(\phi (t), \theta )) S^{\rm T}},$\end{document} and \documentclass[12pt]{minimal}
+}{}$J = (J_{ij}) = ({\partial A_j}/{\partial \phi _j})$\end{document} is the Jacobian. Since the SDE in equation (3.6) is linear with Itô representation, the transition \documentclass[12pt]{minimal}
+}{}${\rm \mathbb {P}}(\xi (t + \tau )\,|\,\xi (t))$\end{document} is Gaussian with mean and variance (Komorowski and others, 2009) defined by
+ (3.7) \documentclass[12pt]{minimal}
+}{}\[\frac {{\rm d} \mu }{{\rm d} t} = J(\phi (t)) \mu (t), \quad \frac {{\rm d} \Sigma }{{\rm d} t} = \Sigma (t) J(\phi (t))^{\rm T} +J(\phi (t)) \Sigma (t)^{\rm T} +B(\phi (t))B(\phi (t))^{\rm T}.\]\end{document} 
+
+Thus, the transition probabilities of the state vector are given by \documentclass[12pt]{minimal}
+}{}${\rm \mathbb {P}}({\textbf{X}}^{{\rm L}}(t + \tau ) \,|\, {\textbf{X}}^{{\rm L}}(t)) = \hbox {{\textit {N}}}(\phi (t) + \Omega ^{-1/2}\mu (t + \tau ), \Omega ^{-1} \Sigma (t + \tau ))$\end{document}. In the case of a linear system where \documentclass[12pt]{minimal}
+}{}$J(\phi (t)) \equiv J$\end{document} is independent of time, as in our gene transcription model, (3.7) can be simplified to give \documentclass[12pt]{minimal}
+}{}$\mu (t + \tau ) = {\rm e}^{J \tau } \xi (t)$\end{document} and \documentclass[12pt]{minimal}
+}{}$\Sigma (t + \tau ) = \int _t^{t + \tau } [{\rm e}^{J(t + \tau - s)} B(s)][{\rm e}^{J(t + \tau - s)} B(s)]^{\rm T} \,{\rm d} s$\end{document}.
+
+Both the CLE and LNA are derived in the limit as the system size \documentclass[12pt]{minimal}
+}{}$\Omega \to \infty$\end{document} with precise statements given in Kurtz (1971, 1978). Despite the LNA commonly being derived as an approximation to the CLE, Anderson and Kurtz (2011) show that in fact less stringent assumptions are required for the derivation. Inference on different transcription networks including autoregulatory and dimerization systems using the LNA are given in Ruttor and Opper (2009), Komorowski and others (2009), Stathopoulos and Girolami (2013), Finkenstädt and others (2013) and Fearnhead and others (2014). Although the LNA is derived in the large system size limit, these studies found reasonable performance when the system is of mesoscopic size.
+
+Finally, we construct a further approximation for the gene expression reaction network (2.1)–(2.2), consisting of conditionally independent birth–death networks (Appendix A.4 of supplementary material available at Biostatistics online) given by
+ (3.8) \documentclass[12pt]{minimal}
+}{}\[{2} \emptyset \xrightarrow [\quad \quad \quad ]{\beta (t)} M, \quad \quad M \xrightarrow [\quad \quad \quad ]{\delta _m} \emptyset ,\]\end{document} 
+ (3.9) \documentclass[12pt]{minimal}
+}{}\[\emptyset \xrightarrow [\quad \quad \quad ]{\alpha M^* (t)} P,\quad \quad P \xrightarrow [\quad \quad \quad ]{\delta _p} \emptyset .\]\end{document} 
+This approximation corresponds to the following factorization of the joint transition density:
+ (3.10) \documentclass[12pt]{minimal}
+}{}\[\begin {array}{rl} \mathbb {P}(M(t),P(t)\,|\,M(0), P(0)) & = \mathbb {P}(M(t)\,|\,M(0), P(0))\mathbb {P}(P(t)\,|\, M(t), P(0)) \\ & \approx \mathbb {P}(M(t)\,|\,M(0))\mathbb {P}(P(t)\,|\,M^* (t), P(0)). \end {array}\]\end{document} 
+Note that the exact system is obtained by setting \documentclass[12pt]{minimal}
+}{}$M^* $\end{document} to be the continuous time mRNA process, \documentclass[12pt]{minimal}
+}{}$m(t)$\end{document}, while our approximation arises from setting \documentclass[12pt]{minimal}
+}{}$M^* (t):= m_t$\end{document} to be the discrete time mRNA process. Although alternative definitions of \documentclass[12pt]{minimal}
+}{}$M^* $\end{document} have been considered (Appendix A.4 of supplementary material available at Biostatistics online), we find \documentclass[12pt]{minimal}
+}{}$M^* (t)=m_t$\end{document} provides the best proxy to the exact continuous time process. Under this birth–death decomposition (BDD), one can obtain the exact transition densities for the two separable birth–death subsystems in (3.8)–(3.9) and note that the approximation only affects inference regarding the protein process since marginal inference for the mRNA process will be exact. The resulting transition densities are Poisson-binomial convolutions which may be approximated by a normal density truncated to the positive real line. We term this approach the birth–death approximation (BDA). The improved precision of the BDA becomes apparent in Figure 4, which shows 95% pointwise simulation envelopes for different scenarios. In all scenarios, the BDD and BDA envelopes for both mRNA and protein are closer to the true envelopes with the truncated normal approximation modeling the skewness at low molecular numbers better than the symmetric LNA. The LNA improves as molecular numbers increase although consistently overestimates the variance of the true process for low numbers and will consequently be likely to miss switch points in the transcriptional profiles. This empirical validation, supported by Appendix A.4 (see supplementary material available at Biostatistics online), reinforces the intuition that the BDA may be a preferable approximation for systems of low molecular levels.
+Fig. 4. 95% pointwise confidence envelopes for simulated mRNA (top) and protein (bottom) processes under the true process (black), the BDD (blue), the truncated normal BDA (red), and the LNA (green) for two different scenarios corresponding to different molecular abundances. Scenario 1 (left) is simulated from the parameters \documentclass[12pt]{minimal}
+}{}$\delta _m=1, \delta _p=0.7$\end{document}, \documentclass[12pt]{minimal}
+}{}$\alpha =3, \beta _0=6, \beta _1=20, \beta _2=2$\end{document} with switches occurring at \documentclass[12pt]{minimal}
+}{}$t=12, 20$\end{document}. Scenario 2 (right) is simulated with parameters \documentclass[12pt]{minimal}
+}{}$\delta _m=1, \delta _p=0.7, \alpha =3,\beta _0=20, \beta _1=40, \beta _2=60$\end{document} with switches occurring at \documentclass[12pt]{minimal}
+}{}$t=12, 20$\end{document}.
+
+
+
+4. Inference
+In the presence of a measurement process, state-space models (as depicted in Figure 3) provide a framework for modeling SRNs and their approximations. Specifically, we have
+ (4.1) \documentclass[12pt]{minimal}
+}{}\[X_{t+1} \sim h(x_{t+1}\,|\,x_t, \theta ), \quad Y_t \sim g(y_t\,|\,x_t, \theta ) ,\]\end{document} 
+where \documentclass[12pt]{minimal}
+}{}$h$\end{document} is the transition density of the approximating SRN and \documentclass[12pt]{minimal}
+}{}$g$\end{document} is the density of the measurement process. For ease of notation, we have dropped any explicit dependence on time, i.e. the sequence of observations \documentclass[12pt]{minimal}
+}{}$(Y_0,\ldots , Y_T)$\end{document} are assumed to occur at arbitrary times, \documentclass[12pt]{minimal}
+}{}$(0, t_1,\ldots , t_T)$\end{document} and are equivalent to \documentclass[12pt]{minimal}
+}{}$(Y(0), Y(t_1),\ldots , Y(t_T))$\end{document} in the notation of Section 3. Moreover, we let \documentclass[12pt]{minimal}
+}{}${\textbf{y}}$\end{document} denote the vector of observed data points \documentclass[12pt]{minimal}
+}{}$y_0,\ldots , y_T$\end{document} and let \documentclass[12pt]{minimal}
+}{}$\theta$\end{document} denote the unknown parameter vector.
+
+We now investigate the performance of the LNA and BDA for approximating the posterior \documentclass[12pt]{minimal}
+}{}$f(\theta \,|\,{\textbf{y}})$\end{document} of the underlying SRN. The data likelihood is given by the marginal density,
+ (4.2) \documentclass[12pt]{minimal}
+}{}\[f({\textbf{y}}\,|\,\theta ) = \int _{{\textbf{x}}} f({\textbf{y}}, {\textbf{x}}\,|\,\theta )\, {\rm d}{\textbf{x}} = \int _{{\textbf{x}}} h(x_0\,|\,\theta )g(y_0\,|\,x_0, \theta ) \prod _{t=1}^{\rm T} h(x_t\,|\,x_{t-1}, \theta ) g(y_t\,|\,x_t, \theta ) \,{\rm d}{\textbf{x}}.\]\end{document} 
+Under the LNA with Gaussian measurement error, the above integral can be computed explicitly using the Kalman methodology (see Appendix B.1 of supplementary material available at Biostatistics online). Under the BDA, equation (4.2) is intractable and one instead targets the joint posterior \documentclass[12pt]{minimal}
+}{}$f(\theta ,{\textbf{x}}\,|\,{\textbf{y}})$\end{document} through the following Gibbs sampler (GS):
+Sample the parameter vector \documentclass[12pt]{minimal}
+}{}$\theta$\end{document} from \documentclass[12pt]{minimal}
+}{}$f(\theta \,|\,{\textbf{y}},{\textbf{x}})$\end{document}.
+
+Sample the latent states, \documentclass[12pt]{minimal}
+}{}${\textbf{x}}$\end{document}, from the conditional density, \documentclass[12pt]{minimal}
+}{}$f({\textbf{x}}\,|\,{\textbf{y}}, \theta )$\end{document}.
+
+
+
+Parameter inference. In order to sample \documentclass[12pt]{minimal}
+}{}$\theta$\end{document} from either \documentclass[12pt]{minimal}
+}{}$f(\theta \,|\, {\textbf{y}}, {\textbf{x}})$\end{document} or \documentclass[12pt]{minimal}
+}{}$f(\theta \,|\, {\textbf{y}})$\end{document}, depending on the approximation used, we construct an appropriate MCMC sampler. In particular, inference about \documentclass[12pt]{minimal}
+}{}$\theta$\end{document} includes inference on the number, \documentclass[12pt]{minimal}
+}{}$k$\end{document}, and position, \documentclass[12pt]{minimal}
+}{}$s_1,\ldots , s_k$\end{document} of switches as well as the associated kinetic parameters \documentclass[12pt]{minimal}
+}{}$(\beta _0,\ldots , \beta _k, \alpha , \delta _m, \delta _p)$\end{document}, the measurement parameters, \documentclass[12pt]{minimal}
+}{}$(\kappa , \sigma _{\epsilon }^2)$\end{document} and the initial state of the latent molecular processes, \documentclass[12pt]{minimal}
+}{}$(M_0, P_0)$\end{document}. Details of all prior distributions are given in Appendix C of supplementary material available at Biostatistics online. Since the dimension of \documentclass[12pt]{minimal}
+}{}$\theta$\end{document} varies with the number of switches, we employ a RJ scheme (Green, 1995) to sample across the differing dimensions. In particular, at each iteration of the MCMC, we propose one of three possible moves: (1) add a switch, (2) delete a switch, and (3) move a switch. Further details can be found in Appendix D of supplementary material available at Biostatistics online.
+
+Owing to the high dimensionality of the integral in (4.2), there is a strong correlation between different model parameters. In order to sample efficiently, we reparameterize \documentclass[12pt]{minimal}
+}{}$\tilde {\alpha }:=\kappa \alpha$\end{document} and \documentclass[12pt]{minimal}
+}{}$\tilde {P}_t:= \kappa P_t$\end{document} and target the posterior of the log-parameters (\documentclass[12pt]{minimal}
+}{}$\log \theta$\end{document}). Efficiency was further increased through the adaptive scheme of Haario and others (2001). Specifically, these log-parameters were sampled in two blocks where proposals are drawn from a multivariate Gaussian centered at the previous value, with the covariance matrix proportional to the covariance of the Markov chains. This adaptation results in an ergodic Markov chain provided the target density is bounded from above and has bounded support.
+
+Inferring the latent states. There are many ways one can perform the filtering procedure in step 2 of the GS (see Fearnhead, 2011 for a review). Under the BDA, we found a conditional sequential Monte Carlo particle filter (Andrieu and others, 2010) to perform well. The approach is based on forward simulations to sequentially approximate the filtering density, \documentclass[12pt]{minimal}
+}{}$f(x_t\,|\,y_{0:t}, \theta )$\end{document} and can be applied to very general state-space models that are not necessarily linear or Gaussian. The filtering density is approximated by \documentclass[12pt]{minimal}
+}{}$f^{N_p}(x_t\,|\,y_{0:t}, \theta ) = \sum _{i=1}^{N_p} w^{(i)}_t \delta _{x^{(i)}_t}$\end{document}, where \documentclass[12pt]{minimal}
+}{}$\delta _x$\end{document} is a delta function centered at \documentclass[12pt]{minimal}
+}{}$x$\end{document}, and \documentclass[12pt]{minimal}
+}{}$w^{(i)}_t$\end{document} are importance weights. Given the approximate filtering density \documentclass[12pt]{minimal}
+}{}$f^{N_p}({\textbf{x}}\,|\,{\textbf{y}}, \theta ):=f^{N_p}(x_{0:T}\,|\,y_{0:T}, \theta )$\end{document}, one can obtain a sample of the latent states \documentclass[12pt]{minimal}
+}{}${\textbf{x}}$\end{document} as required and the resulting algorithm is termed Particle Gibbs (Andrieu and others, 2010). Further details of the algorithm and proposal densities used for the BDA can be found in Appendix B.2 (see supplementary material available at Biostatistics online).
+
+Hierarchical modeling. In order to incorporate as much information as possible into the algorithm, informative prior distributions are desirable. In the example of single cell imaging data, additional experiments can be performed to obtain estimates of the degradation parameters, \documentclass[12pt]{minimal}
+}{}$\delta _m$\end{document} and \documentclass[12pt]{minimal}
+}{}$\delta _p$\end{document}. A hierarchical structure can be used to aid in the identification of the remaining parameters since a dataset will typically consist of multiple time series from the same experiment (Finkenstädt and others, 2013). Let \documentclass[12pt]{minimal}
+}{}${\textbf{y}}^{(i)}$\end{document} denote the observed time series for cell \documentclass[12pt]{minimal}
+}{}$i$\end{document}, and \documentclass[12pt]{minimal}
+}{}$\theta ^{(i)}:=(\beta ^{(i)}(t), \alpha ^{(i)}, \delta ^{(i)}_m, \delta ^{(i)}_p, \kappa ^{(i)}, \sigma _{\epsilon }^{(i)}, M_0^{(i)}, P_0^{(i)})$\end{document}, the vector of parameters, for \documentclass[12pt]{minimal}
+}{}$i=1,\ldots ,N$\end{document}. We assume a log-normal hierarchical structure for translation rates, \documentclass[12pt]{minimal}
+}{}$\log \alpha ^{(i)} \sim \hbox {{\textit {N}}}(\mu _{\alpha },\sigma ^2_{\alpha })$\end{document}, and measurement parameters, \documentclass[12pt]{minimal}
+}{}$\log \kappa ^{(i)} \sim \hbox {{\textit {N}}}(\mu _{\kappa },\sigma ^2_{\kappa })$\end{document}, \documentclass[12pt]{minimal}
+}{}$\log \sigma _{\epsilon }^{(i)} \sim {\textit {N}}(\mu _{\sigma },\sigma ^2_{\sigma }),$\end{document} which allows a conjugate update of the hyper-parameters (Appendix E of supplementary material available at Biostatistics online).
+
+Specifying a hierarchical model for the transcription rates \documentclass[12pt]{minimal}
+}{}$\beta :=(\beta ^{(1)},\ldots , \beta ^{(N)})$\end{document}, where \documentclass[12pt]{minimal}
+}{}$\beta ^{(i)}:=(\beta _0^{(i)},\ldots , \beta _k^{(i)})$\end{document} is the vector for each cell \documentclass[12pt]{minimal}
+}{}$i$\end{document}, is less straightforward. To use the same specification as above would dilute the effect of switching events since all rates would be shrunk to a single distribution. On the other hand, vague proper priors are not a feasible option since it gives too much prior probability to the zero switch model (Green, 1995). As an alternative, we specify a hierarchical mixture model with \documentclass[12pt]{minimal}
+}{}$\log \beta ^{(i)} \sim \sum _{m=1}^M w_{\beta _m} \hbox {{\textit {N}}}(\mu _{\beta _m}, \sigma _{\beta _m}^2)$\end{document}, which reduces the hierarchical shrinkage. Without resorting to a second RJ, it is necessary to specify the number of components in advance. One could choose several candidates and perform model selection a posteriori, although we found two components sufficient to capture the variability in the data, which is supported by the biological hypothesis that transcription will typically occur at either a high or low rate. Simulations showed that if the rates truly come from a single component, then this is elicited from a two-component specification with one weight estimated to be very low.
+
+The hyper-parameters \documentclass[12pt]{minimal}
+}{}$\vartheta := (\mu _{\alpha }, \sigma _{\alpha }^2, \mu _{\kappa }, \sigma _{\kappa }^2, \mu _{\sigma }, \sigma _{\sigma }^2, \mu _{\beta }, \sigma _{\beta }^2, w_{\beta })$\end{document} are assigned uninformative prior densities (Appendix C of supplementary material available at Biostatistics online) and are estimated in addition to each \documentclass[12pt]{minimal}
+}{}$\theta ^{(i)}$\end{document}.
+
+Consequently, the algorithm specification for sampling from the full posterior \documentclass[12pt]{minimal}
+}{}$f(\theta ^{(1)},\ldots , \theta ^{(N)}, \vartheta \,|\, {\textbf{y}}^{(1)},\ldots , {\textbf{y}}^{(N)})$\end{document} has the following structure where additional steps required only under the BDA are given in italics:
+Initialization
+Initialize parameters, \documentclass[12pt]{minimal}
+}{}$\theta$\end{document}.
+
+Initialize the latent states \documentclass[12pt]{minimal}
+}{}$M^{(i)}_1,\ldots ,M^{(i)}_T, \tilde {P}^{(i)}_1,\ldots , \tilde {P}^{(i)}_T$\end{document}.
+
+
+
+Update hyper-parameters, \documentclass[12pt]{minimal}
+}{}$\vartheta$\end{document}, from the full conditional, \documentclass[12pt]{minimal}
+}{}$f(\vartheta \,|\, \theta ^{(1)},\ldots , \theta ^{(N)}, {\textbf{y}}^{(1)},\ldots , {\textbf{y}}^{(N)}) = f(\vartheta \,|\, \theta ^{(1)},\ldots , \theta ^{(N)})$\end{document}.
+
+For cell \documentclass[12pt]{minimal}
+}{}$i=1,\ldots ,N$\end{document}, sample \documentclass[12pt]{minimal}
+}{}$\theta ^{(i)}$\end{document}
+and the latent states,
+update the log transcriptional step function by RJ step;
+
+sample \documentclass[12pt]{minimal}
+}{}$\log (\beta ^{(i)}_0,.., \beta ^{(i)}_k, \delta ^{(i)}_m, \delta ^{(i)}_p, M^{(i)}_0)$\end{document} parameters by a random walk Metropolis–Hastings (MH) step;
+
+sample \documentclass[12pt]{minimal}
+}{}$\log (\tilde {\alpha }^{(i)}, \kappa ^{(i)}, \sigma _{\epsilon }^{(i)}, \tilde {P}^{(i)}_0)$\end{document} parameters by a random walk MH step;
+
+update the latent states, \documentclass[12pt]{minimal}
+}{}$M^{(i)}_1,\ldots ,M^{(i)}_T, \tilde {P}^{(i)}_1,\ldots , \tilde {P}^{(i)}_T$\end{document}, by a particle Gibbs step.
+
+
+
+Repeat steps 2 and 3 until convergence.
+
+
+
+5. Simulation study
+In order to investigate the performance of the LNA and BDA, we perform a comprehensive simulation study where data were generated from the exact MJP via a stochastic simulation algorithm (Gillespie, 1977). The synthetic data were constructed to replicate the main features observed in the data (Figure 2) with further details given in Appendix F (see supplementary material available at Biostatistics online). Applying both the LNA and BDA models to these data, it was found that informative priors for the degradation parameters were essential in order to identify both the transcriptional profile, \documentclass[12pt]{minimal}
+}{}$\beta (t)$\end{document}, and translation rate, \documentclass[12pt]{minimal}
+}{}$\alpha$\end{document}. We therefore imposed informative prior distributions, \documentclass[12pt]{minimal}
+}{}$\log \delta _m \sim \hbox {{\textit {N}}}(\mu _{\delta _m}, \sigma ^2_{\delta _m})$\end{document} and \documentclass[12pt]{minimal}
+}{}$\log \delta _p \sim \hbox {{\textit {N}}}(\mu _{\delta _p}, \sigma ^2_{\delta _p}),$\end{document} where the hyper-parameters were fixed at the true values. Analyses showed that, under the BDA, the scaling parameter, \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document}, remained unidentifiable in the majority of simulations. We hypothesize this is because, under the BDA, we are targeting an extended space by explicitly sampling the latent states. To our knowledge, there has been no application within this extended framework that has been able to incorporate a scaling parameter in the measurement equation. We hence consider two scenarios under the BDA: (1) \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document} is fixed at the true value and (2) \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document} is fixed at the posterior median obtained from the LNA.
+
+The simulation study was coded in MATLAB® and typically took 10–32 h to run on a standard PC under the LNA, for 200–700 K iterations. Despite the fact that the BDA methodology is computationally faster to run per MCMC iteration, due to the high autocorrelation in the chains and poorer mixing properties, we found it would take \documentclass[12pt]{minimal}
+}{}$\sim$\end{document}1–3 million iterations to sufficiently explore the posterior, which could take 20–40 h. This is unsurprising since the BDA methodology requires the sampling of all latent states in addition to the parameter vector. For all scenarios under the BDA, 100 particles were used to give a sufficient number of independent samples in the particle filter. Comparing the simulation results in Appendix F (see supplementary material available at Biostatistics online), we find the BDA often produces tighter credible intervals. In addition, in some scenarios, the BDA is better able to identify \documentclass[12pt]{minimal}
+}{}$\alpha$\end{document} and \documentclass[12pt]{minimal}
+}{}$\beta$\end{document}, which are highly correlated, whereas the LNA identifies the product \documentclass[12pt]{minimal}
+}{}$\alpha \beta$\end{document}. The hierarchical structure greatly aids this identifiability and, moreover, also enables the algorithm to differentiate between intrinsic variability and transcriptional switches.
+
+Prior estimation of the degradation parameters is essential and, moreover, the precision of these priors influences the posterior inference. Typically, 10–15 time series consisting of around 100 observations are sufficient to inform the hierarchy. More cells may be included in the hierarchy at an increased computational cost, with our methods having been successfully applied to datasets of 100 or more cells consisting of \documentclass[12pt]{minimal}
+}{}$\sim$\end{document}190 time points each.
+
+6. Application to data
+To apply our methods to the data shown in Figure 2, priors over the reporter degradation rates are obtained from Finkenstädt and others (2013). We first apply the LNA and then apply the BDA with \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document} fixed at the posterior median obtained from the LNA. For real data, significantly more iterations were required to fully explore the posterior under the BDA (8 and 4.5 million iterations for the two datasets given in Figures 2(a) and (b)) compared to the LNA (300 and 900 K, respectively). The estimated transcriptional profiles for both datasets are given in Figure 5. Both tissues exhibit dynamic switching behavior with multiple switching events occurring throughout the time course that would not be exhibited under the traditional binary model. Figure 6 shows a single backcalculation under both the LNA and BDA along with 95% credible intervals of the posterior switch times and transcription rates. This example typifies the two methods, where although the estimated transcription rates differ, the product of translation and transcription, \documentclass[12pt]{minimal}
+}{}$\alpha \beta$\end{document}, along with the estimated switch times are comparable with tighter intervals obtained under the BDA. The model fit was assessed through the analysis of recursive residuals of the one-step ahead predictive distribution and are shown in Appendix G (see supplementary material available at Biostatistics online) with no departure from the model assumptions detected, indicating that the SSM under both the LNA and BDA fits the data well.
+Fig. 5. Heatmaps of the posterior transcriptional profiles for (a) the immature tissue sample and (b) the mature tissue sample calculated under the LNA. (c) and (d) are calculated under the BDA. Each row within a heatmap corresponds to a separate cell and the color is indicative of the posterior transcription rate (calculated as mRNA molecules per hour). To obtain the posterior profiles, we extract the marginal distribution of the number and position of switch times. Conditional on these times, the posterior rates are then extracted from the MCMC output.
+
+
+Fig. 6. (a) The raw time course data for a single cell from the mature tissue sample, with the backcalculated transcriptional profile given in (b) under the LNA and in (c) under the BDA. The reparameterized profile of transcription \documentclass[12pt]{minimal}
+}{}$\times$\end{document} translation, \documentclass[12pt]{minimal}
+}{}$\alpha \beta$\end{document} is given in (d) for the LNA and (e) for the BDA. Dashed lines represent the 95% credible intervals about the posterior median transcriptional switches (vertical lines) and transcriptional rates (horizontal lines).
+
+
+
+More extensive biological analyses of these and other datasets will be presented in forthcoming work, including analyses of the inter-switch times which can provide further insight into gene regulation. For instance, if the inter-switch time distribution departs from exponential behavior it may indicate the presence of a refractory period as introduced in Harper and others (2011).
+
+7. Discussion
+In this study, we have proposed a general methodology for inferring transcriptional regulation for data obtained through single cell imaging techniques. The underlying biological model is flexible enough to describe a wide range of behaviors that cannot be captured by the traditional binary model and can be estimated reliably through a RJ scheme. In order to achieve the above, we consider two approximations to the true stochastic system. With a slight loss in precision, the LNA has the advantage both in terms of computational speed, through the use of the Kalman methodology, and also its ability to identify the scaling parameter of the measurement process. This parameter is of interest as it allows one to obtain an estimate of the underlying system size. However, since the BDA can give a more accurate representation of the stochastic system, it may suggest the use of this in conjunction with the LNA estimate of \documentclass[12pt]{minimal}
+}{}$\kappa$\end{document}. The BDA, although more expensive than the LNA, is still considerably cheaper than the exact methods reviewed within this paper as we continue to work with the underlying transition densities albeit through a normal approximation. It therefore provides a realistic alternative to both the LNA and exact approaches when inferring systems of very small molecular numbers. The BDA is specific to our gene expression model, however, many different SRNs can be approximated by sequences of conditionally independent birth–death reactions and a similar approach may be more widely applied. Despite the theoretical advantages of the more exact BDA, for practical implementation on large datasets we consider the LNA to give reasonable approximations in realistic computational run time. For further increases in computational time one may consider approximate inference methods such as variational Bayes (see, for example, Opper and Sanguinetti, 2010; Opper and others, 2010).
+
+This paper has focussed on the implementation of a SSM for transcription. We have shown how these methods may readily be applied to data whereupon further analysis of the posterior transcriptional profiles may give insight into the underlying mechanisms of gene expression. This is in contrast to a priori assuming a specific regulatory network, which, to ensure model identifiability, often requires a steady-state assumption (Tkačik and Walczak, 2011) that does not correctly model the intrinsic noise (Thomas and others, 2012).
+
+The SSM provides an approach which is both flexible and scientifically interpretable. The natural hierarchical structure enables the differentiation of intrinsic variability and transcriptional switches. This has been exemplified through the application to the prolactin gene where our posterior inference shows a clear dynamic switching regime for many different transcriptional levels. Moreover, the prolactin gene provides a good example for modeling gene expression through stochastic processes with random transcriptional pulses as it exemplifies features found in many different genes (Suter and others, 2011).
+
+Supplementary material
+Supplementary Material is available at http://biostatistics.oxfordjournals.org.
+
+Funding
+K.L.H. is supported by the Engineering and Physical Sciences Research Council (ASTAA1112.KXH), H.M., D.A.R. by Wellcome Trust Grant (RSMAA.3020.SRA), and K.F., J.R.E.D., M.R.H.W. by Wellcome Trust Grant (67252). Funding to pay the Open Access publication charges for this article was provided by RCUK and COAF.
+
+Supplementary Material
+Supplementary Data
+ Acknowledgments
+The authors wish to acknowledge helpful discussions with D. Jenkins and A. Finke regarding the statistical modeling and methodology and A. Patist regarding the data application. Conflict of Interest: None declared.
+References
+Amrein M. Künsch H. R.   (2012 ). Rate estimation in partially observed Markov jump processes with measurement errors . Statistics and Computing 
+22 (2 ), 513 –526 .
+Anderson D. F. Kurtz T. G.   (2011 ). Continuous time Markov chain models for chemical reaction networks  In: Design and Analysis of Biomolecular Circuits . Berlin : Springer , pp. 3 –42 .
+Andrieu C. Doucet A. Holenstein R.   (2010 ). Particle Markov chain Monte Carlo methods . Journal of the Royal Statistical Society: Series B (Statistical Methodology) 
+72 (3 ), 269 –342 .
+Boys R. J. Wilkinson D. J. Kirkwood T. B. L.   (2008 ). Bayesian inference for a discretely observed stochastic kinetic model . Statistics and Computing 
+18 (2 ), 125 –135 .
+Choi B. Rempala G. A.   (2012 ). Inference for discretely observed stochastic kinetic networks with applications to epidemic modeling . Biostatistics 
+13 (1 ), 153 –165 .21835814 
+Daigle B. Roh M. Petzold L. Niemi J.   (2012 ). Accelerated maximum likelihood parameter estimation for stochastic biochemical systems . BMC Bioinformatics 
+13 (1 ), 68 .22548918 
+Elowitz M. B. Levine A. J. Siggia E. D. Swain P. S.   (2002 ). Stochastic gene expression in a single cell . Science Signaling 
+297 (5584 ), 1183 .
+Fearnhead P.   (2011 ). MCMC for state-space models . In: Brooks Gelman Jones Meng   (editors), Handbook of Markov Chain Monte Carlo . Boca Raton, USA : Chapman & Hall/CRC Handbook of Modern Statistical Methods , pp. 513 –529 .
+Fearnhead P. Giagos V. Sherlock C.   (2014 ). Inference for reaction networks using the linear noise approximation . Biometrics 
+70 (2 ), 457 –466 .24467590 
+Featherstone K. Harper C. V. McNamara A. Semprini S. Spiller D. G. McNeilly J. McNeilly A. S. Mullins J. J. White M. R. H. Davis J. R. E.   (2011 ). Pulsatile patterns of pituitary hormone gene expression change during development . Journal of Cell Science 
+124 (20 ), 3484 –3491 .21984812 
+Featherstone K. White M. R. H. Davis J. R. E.   (2012 ). The prolactin gene: a paradigm of tissue-specific gene regulation with complex temporal transcription dynamics . Journal of Neuroendocrinology 
+24 (7 ), 977 –990 .22420298 
+Finkenstädt B. Heron E. A. Komorowski M. Edwards K. Tang S. Harper C. V. Davis J. R. E. White M. R. H. Millar A. J. Rand D. A.   (2008 ). Reconstruction of transcriptional dynamics from gene reporter data using differential equations . Bioinformatics 
+24 (24 ), 2901 –2907 .18974172 
+Finkenstädt B. Woodcock D. J. Komorowski M. Harper C. V. Davis J. R. E. White M. R. H. Rand D. A.   (2013 ). Quantifying intrinsic and extrinsic noise in gene transcription using the linear noise approximation: an application to single cell data . The Annals of Applied Statistics 
+7 (4 ), 1960 –1982 .
+Gillespie D. T.   (1977 ). Exact stochastic simulation of coupled chemical reactions . The Journal of Physical Chemistry 
+81 (25 ), 2340 –2361 .
+Golightly A. Henderson D. A. Sherlock C.   (2014 ). Delayed acceptance particle MCMC for exact inference in stochastic kinetic models . Statistics and Computing , 1 –17 , doi:10.1007/s11222-014-9469-x .
+Golightly A. Wilkinson D. J.   (2011 ). Bayesian parameter inference for stochastic biochemical network models using particle Markov chain Monte Carlo . Interface Focus 
+1 (6 ), 807 –820 .23226583 
+Green P. J.   (1995 ). Reversible jump Markov chain Monte Carlo computation and Bayesian model determination . Biometrika 
+82 (4 ), 711 –732 .
+Haario H. Saksman E. Tamminen J.   (2001 ). An adaptive Metropolis algorithm . Bernoulli 
+7 (2 ), 223 –242 .
+Harper C. V. Featherstone K. Semprini S. Friedrichsen S. McNeilly J. Paszek P. Spiller D. G. McNeilly A. S. Mullins J. J. Davis J. R. E.   (2010 ). Dynamic organisation of prolactin gene expression in living pituitary tissue . Journal of Cell Science 
+123 (3 ), 424 .20130141 
+Harper C. V. Finkenstädt B. Woodcock D. J. Friedrichsen S. Semprini S. Ashall L. Spiller D. G. Mullins J. J. Rand D. A. Davis J. R. E.   (2011 ). Dynamic analysis of stochastic transcription cycles . PLoS Biology 
+9 (4 ), e1000607 .21532732 
+Jenkins D. J. Finkenstädt B. Rand D. A.   (2013 ). A temporal switch model for estimating transcriptional activity in gene expression . Bioinformatics 
+29 (9 ), 1158 –1165 .23479351 
+Komorowski M. Finkenstädt B. Harper C. V. Rand D. A.   (2009 ). Bayesian inference of biochemical kinetic parameters using the linear noise approximation . BMC Bioinformatics 
+10 (1 ), 343 .19840370 
+Kurtz T. G.   (1971 ). Limit theorems for sequences of jump Markov processes approximating ordinary differential processes . Journal of Applied Probability 
+8 (2 ), 344 –356 .
+Kurtz T. G.   (1978 ). Strong approximation theorems for density dependent Markov chains . Stochastic Processes and Their Applications 
+6 (3 ), 223 –240 .
+Larson D. R. Singer R. H. Zenklusen D.   (2009 ). A single molecule view of gene expression . Trends in Cell Biology 
+19 (11 ), 630 –637 .19819144 
+Opper M. Ruttor A. Sanguinetti G.   (2010 ). Approximate inference in continuous time Gaussian-Jump processes . In Proceedings of Advances in Neural Information Processing Systems , pp. 1831 –1839 .
+Opper M. Sanguinetti G.   (2010 ). Learning combinatorial transcriptional dynamics from gene expression data . Bioinformatics 
+26 (13 ), 1623 –1629 .20444835 
+Paulsson J.   (2005 ). Models of stochastic gene expression . Physics of Life Reviews 
+2 (2 ), 157 –175 .
+Peccoud J. Ycart B.   (1995 ). Markovian modeling of gene-product synthesis . Theoretical Population Biology 
+48 (2 ), 222 –234 .
+Raj A. Van Oudenaarden A.   (2008 ). Nature, nurture, or chance: stochastic gene expression and its consequences . Cell 
+135 (2 ), 216 –226 .18957198 
+Ruttor A. Opper M.   (2009 ). Efficient statistical inference for stochastic reaction processes . Physical Review Letters 
+103 (23 ), 230601 .20366136 
+Sanchez A. Choubey S. Kondev J.   (2013 ). Stochastic models of transcription: from single molecules to single cells . Methods 
+62 (1 ), 13 –25 .23557991 
+Sanguinetti G. Ruttor A. Opper M. Archambeau C.   (2009 ). Switching regulatory models of cellular stress response . Bioinformatics 
+25 (10 ), 1280 –1286 .19279066 
+Semprini S. Friedrichsen S. Harper C. V. McNeilly J. R. Adamson A. D. Spiller D. G. Kotelevtseva N. Brooker G. Brownstein D. G. McNeilly A. S.   (2009 ). Real-time visualization of human prolactin alternate promoter usage in vivo using a double-transgenic rat model . Molecular Endocrinology 
+23 (4 ), 529 –538 .19147700 
+Spiller D. G. Wood C. D. Rand D. A. White M. R. H.   (2010 ). Measurement of single-cell dynamics . Nature 
+465 (7299 ), 736 –745 .20535203 
+Stathopoulos V. Girolami M. A.   (2013 ). Markov chain Monte Carlo inference for Markov jump processes via the linear noise approximation . Philosophical Transactions of the Royal Society A: Mathematical, Physical and Engineering Sciences 
+371 (1984 ), 20110541 .
+Suter D. M. Molina N. Gatfield D. Schneider K. Schibler U. Naef F.   (2011 ). Mammalian genes are transcribed with widely different bursting kinetics . Science 
+332 (6028 ), 472 .21415320 
+Thomas P. Straube A. V. Grima R.   (2012 ). The slow-scale linear noise approximation: an accurate, reduced stochastic description of biochemical networks under timescale separation conditions . BMC Systems Biology 
+6 (1 ), 39 .22583770 
+Tkačik G. Walczak A. M.   (2011 ). Information transmission in genetic regulatory networks: a review . Journal of Physics: Condensed Matter 
+23 (15 ), 153102 .21460423 
+van Kampen N. G.   (1961 ). A power series expansion of the master equation . Canadian Journal of Physics 
+39 (4 ), 551 –567 .
+Wallace E. W. Gillespie D. T. Sanft K. R. Petzold L. R.   (2012 ). Linear noise approximation is valid over limited times for any chemical system that is sufficiently large . Systems Biology, IET 
+6 (4 ), 102 –115 .
+Zechner C. Unger M. Pelet S. Peter M. Koeppl H.   (2014 ) Scalable inference of heterogeneous reaction kinetics from pooled single-cell recordings . Nature Methods 
+11 (2 ), 197 –202 .24412977

@@ -1,0 +1,484 @@
+
+BiostatisticsBiostatisticsbiostsbiostsBiostatistics (Oxford, England)1465-46441468-4357Oxford University Press 10.1093/biostatistics/kxv022kxv022ArticlesThe projack: a resampling approach to correct for ranking bias in high-throughput studies Zhou Yi-Hui *Department of Biological Sciences, Bioinformatics Research Center, North Carolina State University, NC 27695, USAWright Fred A. Departments of Statistics and Biological Sciences, Bioinformatics Research Center, North Carolina State University, NC 27695, USA* To whom correspondence should be addressed. yzhou19@ncsu.edu1 2016 03 6 2015 03 6 2015 17 1 54 64 20 10 2014 8 5 2015 8 5 2015 © The Author 2015. Published by Oxford University Press.2015This is an Open Access article distributed under the terms of the Creative Commons Attribution License (http://creativecommons.org/licenses/by/4.0/), which permits unrestricted reuse, distribution, and reproduction in any medium, provided the original work is properly cited.The problem of ranked inference arises in a number of settings, for which the investigator wishes to perform parameter inference after ordering a set of \documentclass[12pt]{minimal}
+}{}$m$\end{document} statistics. In contrast to inference for a single hypothesis, the ranking procedure introduces considerable bias, a problem known as the “winner's curse” in genetic association. We introduce the projack (for Prediction by Re- Ordered Jackknife and Cross-Validation, \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold). The projack is a resampling-based procedure that provides low-bias estimates of the expected ranked effect size parameter for a set of possibly correlated \documentclass[12pt]{minimal}
+}{}$z$\end{document} statistics. The approach is flexible, and has wide applicability to high-dimensional datasets, including those arising from genomics platforms. Initially, motivated for the setting where original data are available for resampling, the projack can be extended to the situation where only the vector of \documentclass[12pt]{minimal}
+}{}$z$\end{document} values is available. We illustrate the projack for correction of the winner's curse in genetic association, although it can be used much more generally.
+
+Bias correctionEffect size estimationWinner's curseNIHR01MH101819NSFDMS-1127914
+1. Introduction
+We consider the classical setting in which a vector of statistics \documentclass[12pt]{minimal}
+}{}${\textbf{z}}=\{z_1, z_2, \ldots , z_m\}$\end{document} is observed, where \documentclass[12pt]{minimal}
+}{}$Z_i \sim N(\mu _i,1),\ i=1, \ldots , m,$\end{document} and \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu =\{\mu _1, \mu _2,\ldots ,\mu _m\}$\end{document} is fixed and unknown. We refer to each \documentclass[12pt]{minimal}
+}{}$i$\end{document} as corresponding to a “hypothesis,” although our focus is mainly on estimation rather than testing. A vast literature, mostly assuming independence of the statistics, concerns estimation of \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} under a squared error loss. Key approaches and seminal work includes parametric and nonparametric empirical Bayes (Robbins, 1956), James–Stein shrinkage (James and Stein, 1961, Efron and Morris, 1973) and, for “sparse” \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} consisting of many zeros, testing-based threshold approaches (e.g., Johnstone and Silverman, 2004), with approaches concisely reviewed in Jiang and Zhang, 2009).
+
+However, in large-scale multiple testing problems, the researcher is primarily interested in performing parameter inference for those hypotheses showing the greatest evidence against the null hypothesis, often after performing significance testing corrected for multiple comparisons. Any inference concerning the significant hypotheses must account for the impact of the selection procedure itself, for otherwise the estimates will be hopelessly biased (Ghosh and others, 2008). In genomics, this selection bias, termed the “winner's curse,” can be extreme, as the significance testing thresholds must account for thousands or even millions of tests.
+
+1.1. The ranked inference problem
+Without loss of generality, we assume that subscripts have been assigned so that \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} is sorted, i.e., each \documentclass[12pt]{minimal}
+}{}$\mu _i \le \mu _{i+1}$\end{document}, although \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} and the true ordering are unknown to the data analyst. We use “\documentclass[12pt]{minimal}
+}{}$(i)$\end{document}” to denote the original index of the \documentclass[12pt]{minimal}
+}{}$i$\end{document}th ranked \documentclass[12pt]{minimal}
+}{}$z$\end{document} value. The order statistics are \documentclass[12pt]{minimal}
+}{}${\textbf{z}}_{(.)}=\{z_{(1)}, z_{(2)},\ldots ,z_{(m)}\}$\end{document}, with correspondingly ordered parameters \documentclass[12pt]{minimal}
+}{}${{\boldsymbol \mu }_{(.)}}=\{\mu _{(1)},\ldots ,\mu _{(m)}\}$\end{document}. The indexes \documentclass[12pt]{minimal}
+}{}$(.)=\{(1), (2), \ldots , (m)\}$\end{document} are determined by the random outcome \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document}, and so \documentclass[12pt]{minimal}
+}{}${\boldsymbol \mu }_{(.)}$\end{document} is random, even though \documentclass[12pt]{minimal}
+}{}$\boldsymbol {\mu }$\end{document} is fixed.
+
+The broad goal of our ranked inference is to find, for each \documentclass[12pt]{minimal}
+}{}$i$\end{document}, an estimate of \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}=E(\mu _{(i)})$\end{document} with low bias and error, where the expectation is over realizations of \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document}. A fully successful procedure should work for any \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} and all \documentclass[12pt]{minimal}
+}{}$i$\end{document}, although hypotheses with extreme \documentclass[12pt]{minimal}
+}{}$z$\end{document} values are considered most important.
+
+1.2. An example from a psoriasis genome-wide association study
+Table 1 shows odds ratios for allele effects of 10 SNP markers reported in Nair and others (2009) in a case–control study of 1350 psoriasis cases vs. 1400 controls. The study is illustrative because the authors report odds ratios from a replication set of 5000 cases and 5000 controls (larger than the initial scan), and these data were later analyzed by Faye and others (2011) using a proposed winner's curse correction method. The SNPs were among the most significant among 480 000 SNPs tested in the initial study. We treat the replication odds ratios as a gold standard, because they are not subject to the winner's curse, and are based on a larger sample size. Here we see direct evidence of the winner's curse, in which all of the replication odds ratios are closer to 1 than the original estimates, and we show below how to relate the odds ratios to \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document}. The bias in the naive initial estimates can have several negative consequences, including (i) exaggerated attributable risk calculations for the SNPs, (ii) overly optimistic sample size calculations in planning replication studies, and (iii) the possibility of falsely declaring an SNP as “not replicated” in a follow-up study, based on unrealistically high estimation of the true effect size. Interestingly, the SNP with the highest initial odds ratio (\documentclass[12pt]{minimal}
+}{}$\mbox {OR}=2.78$\end{document} for rs12191877 near HLA-B) shows comparatively little shrinkage under replication, due to the phenomenon that the winner's curse has little effect on hypotheses with extreme test statistics (Ghosh and others, 2008).
+Table 1. Ten SNPs displaying association with psoriasis in Nair and others (2009). Genotypes were coded so that odds ratios for these SNPs are \documentclass[12pt]{minimal}
+}{}$>$\end{document}1
+
+Chr	SNP	Pos(Mb)	Nearest gene	z	\documentclass[12pt]{minimal}
+}{}$p$\end{document}-value	Naive OR	Repl. OR	
+6	rs12191877	31.36	HLA-B	15.34	\documentclass[12pt]{minimal}
+}{}$3.9 \times 10^{-53}$\end{document}	2.79	2.64	
+5	rs2082412	158.65	UBLCP1	6.20	\documentclass[12pt]{minimal}
+}{}$5.5 \times 10^{-10}$\end{document}	1.56	1.44	
+5	rs17728338	150.46	ANXA6	5.20	\documentclass[12pt]{minimal}
+}{}$2.0\times 10^{-7}$\end{document}	1.72	1.59	
+5	rs20541	132.02	IL13	4.53	\documentclass[12pt]{minimal}
+}{}$5.8\times 10^{-6}$\end{document}	1.37	1.27	
+6	rs610604	138.24	TNFAIP3	4.34	\documentclass[12pt]{minimal}
+}{}$1.4\times 10^{-5}$\end{document}	1.28	1.19	
+12	rs2066807	55.02	STAT2	4.33	\documentclass[12pt]{minimal}
+}{}$1.5\times 10^{-5}$\end{document}	1.68	1.34	
+1	rs2201841	67.47	IL23R	5.13	\documentclass[12pt]{minimal}
+}{}$2.9\times 10^{-7}$\end{document}	1.35	1.13	
+9	rs1076160	134.8	TSC1	4.24	\documentclass[12pt]{minimal}
+}{}$2.2\times 10^{-5}$\end{document}	1.26	1.09	
+19	rs12983316	10.98	SMARCA4	4.23	\documentclass[12pt]{minimal}
+}{}$2.3\times 10^{-5}$\end{document}	1.37	1.09	
+2	rs397211	113.6	IL1RN	3.29	\documentclass[12pt]{minimal}
+}{}$1.00\times 10^{-3}$\end{document}	1.21	1.08	
+
+
+We note that replication results for a few markers are not always available for genome-scan data. Moreover, replication of an entire GWAS on the same platform gives rise to new combined results (\documentclass[12pt]{minimal}
+}{}$z$\end{document}-statistics) on the initial and replication data, and the combined analysis is again subject to the winner's curse. With the advent of large meta-analyses and “mega”-analyses across numerous cohorts, the results are inherently high dimensional, and often without replication of a few significant markers. Thus it is crucial that the best estimates of effect size be extracted from the same data used to rank the genomic features. Following the example from Table 1, we seek a procedure that can take the initial data and predict the “true” parameter values (odds ratios, in our example), without requiring replication.
+
+1.3. Existing approaches for the ranked inference problem
+For a priori fixed significance testing thresholds, using a likelihood conditional on significance (Ghosh and others, 2008; Zhong and Prentice, 2008) offers a principled approach to correct the winner's curse, provided a fixed significance threshold \documentclass[12pt]{minimal}
+}{}$c$\end{document} (i.e., reject when \documentclass[12pt]{minimal}
+}{}$|z|>c$\end{document}) is used. For \documentclass[12pt]{minimal}
+}{}$Z\sim N(\mu ,1)$\end{document} and unknown \documentclass[12pt]{minimal}
+}{}$\mu$\end{document}, the conditional likelihood is
+ \documentclass[12pt]{minimal}
+}{}\[L_c(\mu )=p_\mu (z |\, |Z| >c)=\frac {p_\mu (z)}{P_\mu (|Z|>c)}=\frac {\phi (z-\mu )}{\Phi (-c+ \mu )+ \Phi (-c-\mu )},\]\end{document} 
+where \documentclass[12pt]{minimal}
+}{}$\Phi$\end{document} is the standard normal cdf, and we might use \documentclass[12pt]{minimal}
+}{}$\tilde \mu ={\rm argmax}_\mu L_c(\mu )$\end{document} as an estimate of the corresponding \documentclass[12pt]{minimal}
+}{}$\delta$\end{document}. However, the dependence on the threshold is not entirely satisfying. If \documentclass[12pt]{minimal}
+}{}$c$\end{document} is chosen based on a genome-wide threshold (i.e., over all tested hypotheses), this approach would not even apply to most of the SNPs in Table 1, as they did not meet multiple testing criteria (e.g., the Bonferroni threshold for the initial study would be \documentclass[12pt]{minimal}
+}{}$\sim 1\times 10^{-7}$\end{document} for family-wise error \documentclass[12pt]{minimal}
+}{}$\alpha =0.05$\end{document}).
+
+Here, as a competitor to our proposed procedure, we use a slight modification to the conditional likelihood approach, as described in Ghosh and others (2014). The modified conditional likelihood uses \documentclass[12pt]{minimal}
+}{}$\hat {\delta }=\tilde \mu$\end{document} if \documentclass[12pt]{minimal}
+}{}$|z|>c$\end{document} and 0 otherwise, and is performed for several values of \documentclass[12pt]{minimal}
+}{}$c$\end{document}. In order to capture a larger number of hypotheses, \documentclass[12pt]{minimal}
+}{}$c$\end{document} might be chosen to correspond to nominal significance, uncorrected for genome-wide multiple comparisons. Larger values of \documentclass[12pt]{minimal}
+}{}$c$\end{document}, e.g., corresponding to genome-wide significance, will aggressively shrink all but the most extreme statistics.
+
+If the full original data are available, then resampling approaches are an alternative. Faye and others (2011) proposed a bootstrapping association approach implemented as the BR-Squared software, designed for genetic association and with individuals as the sampled units. The non-sampled individuals (“out-of-bag”, \documentclass[12pt]{minimal}
+}{}$\sim$\end{document}37% of the data) are used as an artificial replication sample for parameter estimation. However, this approach creates new difficulties, because resampling from the fixed dataset requires handling complex correlations between the in-sample and out-of-sample parameter estimates (Faye and others, 2011). In addition, the approach requires a full analysis of each resampled dataset, which can be computationally demanding. Moreover, the software cannot handle “dosage” genotypes (Zhang and others, 2011) which result from imputation, which are increasingly commonly used.
+
+In this paper, we propose an approach that essentially works with split data samples, using a training portion of the data to rank hypotheses, and the remaining (test) portion to predict effect sizes for the ranked hypotheses. Similar procedures have been proposed (Sun and Bull, 2005), but our procedure has several novel advantages, including (i) a pseudo-matrix construction that generalizes, simplifies, and speeds up resampling; (ii) a procedure to flexibly handle bias/variance tradeoffs in estimation; and (iii) an extension to handle the common situation that only the vector \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document} is available.
+
+1.4. Connecting \documentclass[12pt]{minimal}
+}{}${\mu }$\end{document} to standard parameterization
+The analysis of a vector \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document} arises in a huge variety of applications, as diverse as the comparison of toxoplasmosis infection rates (Efron and Morris, 1975) and genetic association studies (Ghosh and others, 2008), etc. Typically, we model the original data for feature \documentclass[12pt]{minimal}
+}{}$i$\end{document} as governed by a parameter of interest \documentclass[12pt]{minimal}
+}{}$\beta _i$\end{document} with standard error \documentclass[12pt]{minimal}
+}{}${{\rm SE}}_i$\end{document}. A Wald or similar statistic is computed as \documentclass[12pt]{minimal}
+}{}$z_i={\hat \beta }_i/{\widehat {\rm SE}_i}$\end{document}, where “\documentclass[12pt]{minimal}
+}{}$\hat {\ }$\end{document}” signifies an estimate, and \documentclass[12pt]{minimal}
+}{}$\mu _i =\beta _i/{\rm SE}_i$\end{document}. In the example from Table 1, \documentclass[12pt]{minimal}
+}{}$\beta$\end{document} is the natural log of the odds ratios for the effect of each SNP allele. Our basic approach is to use \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document} to perform inference for \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document}, and then convert back to the \documentclass[12pt]{minimal}
+}{}$\beta$\end{document} scale by multiplying by the original estimated standard errors (e.g., as in the toxoplasmosis data of Efron and Morris, 1975 or genetic association data of Ghosh and others, 2008). Technically, the fact that standard errors are estimated produces a slight additional bias, such that \documentclass[12pt]{minimal}
+}{}$E(Z_i)\ne \mu _i$\end{document}, even if \documentclass[12pt]{minimal}
+}{}$E(\hat {\beta }_i)=\beta _i$\end{document}. However, this bias is not consequential to the treatment here, as demonstrated in numerous simulations and analyses.
+
+2. The projack method
+The basic projack has several key elements: (i) construction of an \documentclass[12pt]{minimal}
+}{}$m\times n$\end{document} pseudo-matrix to serve as the data object for resampling; (ii) a re-ordered jackknife procedure to produce low-bias estimates of \documentclass[12pt]{minimal}
+}{}$\boldsymbol \delta$\end{document}; and (iii) \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold stabilization to ensure that the variance of the estimates is not too large. We will use \documentclass[12pt]{minimal}
+}{}$m \times n$\end{document} matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} as a notational example. The \documentclass[12pt]{minimal}
+}{}$i, j$\end{document} element is \documentclass[12pt]{minimal}
+}{}$c_{ij}$\end{document}, the \documentclass[12pt]{minimal}
+}{}$i$\end{document}th row vector \documentclass[12pt]{minimal}
+}{}${\textbf{c}}_{i.}$\end{document}, and \documentclass[12pt]{minimal}
+}{}$j$\end{document}th column vector \documentclass[12pt]{minimal}
+}{}${\textbf{c}}_{.j}$\end{document}. Where necessary, a random matrix/vector will be denoted using boldface italics (e.g., \documentclass[12pt]{minimal}
+}{}${\boldsymbol{{ {C}}}},{\boldsymbol{{ {c}}}}$\end{document}), and scalar random variables by capital italic (e.g., \documentclass[12pt]{minimal}
+}{}$C_{ij}$\end{document}). We use \documentclass[12pt]{minimal}
+}{}$r({\textbf{C}})$\end{document} to denote the \documentclass[12pt]{minimal}
+}{}$m\times 1$\end{document} vector of row means of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document}. We use a bar to represent the mean of a vector e.g., \documentclass[12pt]{minimal}
+}{}$\bar {{\textbf{c}}}_{i.}$\end{document}. \documentclass[12pt]{minimal}
+}{}${\textbf{C}}_{(.)}$\end{document} denotes the result of re-ordering rows of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} so that its row means are increasing. The addition or subtraction of a vector to a matrix is column-wise, so that, for example, \documentclass[12pt]{minimal}
+}{}${{\textbf{C}}}-r({\textbf{C}})$\end{document} is an \documentclass[12pt]{minimal}
+}{}$m \times n$\end{document} matrix with elements \documentclass[12pt]{minimal}
+}{}$c_{ij}-\sum _{j^\prime }c_{i j^\prime }/n$\end{document}. Finally, we use subscript \documentclass[12pt]{minimal}
+}{}$[-j]$\end{document} to signify removal of the \documentclass[12pt]{minimal}
+}{}$j$\end{document}th column.
+
+2.1. Construction of a pseudo-matrix from original data
+For many problems, the original data can be divided into an \documentclass[12pt]{minimal}
+}{}$m \times n$\end{document} matrix \documentclass[12pt]{minimal}
+}{}${\textbf{X}}$\end{document} and length-\documentclass[12pt]{minimal}
+}{}$n$\end{document} vector \documentclass[12pt]{minimal}
+}{}${\textbf{y}}$\end{document}, with perhaps an additional \documentclass[12pt]{minimal}
+}{}$p \times n$\end{document} covariate matrix \documentclass[12pt]{minimal}
+}{}${\textbf{V}}$\end{document}. The statistics result from a comparison of each row \documentclass[12pt]{minimal}
+}{}${\textbf{x}}_{i.}$\end{document} to \documentclass[12pt]{minimal}
+}{}${\textbf{y}}$\end{document} and \documentclass[12pt]{minimal}
+}{}${\textbf{V}}$\end{document}, i.e., \documentclass[12pt]{minimal}
+}{}$z_i=\hat {\mu }_i=f({\textbf{x}}_{i.}, {\textbf{y}},{\textbf{V}})$\end{document}. In a genomics context, \documentclass[12pt]{minimal}
+}{}${\textbf{X}}$\end{document} might be genotype or gene expression data, with \documentclass[12pt]{minimal}
+}{}${\textbf{y}}$\end{document} a vector of clinical outcomes or experimental conditions. The relationship between \documentclass[12pt]{minimal}
+}{}${\textbf{X}}$\end{document} and \documentclass[12pt]{minimal}
+}{}${\textbf{y}}$\end{document} is of primary interest, but might be moderated by covariates \documentclass[12pt]{minimal}
+}{}${\textbf{V}}$\end{document}. Here \documentclass[12pt]{minimal}
+}{}$f$\end{document} will typically be a Wald or other \documentclass[12pt]{minimal}
+}{}$z$\end{document}-statistic.
+
+The projack approach works by performing split-sample analysis of a single matrix, and we construct an appropriate matrix as follows, using a kind of jackknife pseudo-value. Define the \documentclass[12pt]{minimal}
+}{}$m \times n$\end{document} matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} with elements \documentclass[12pt]{minimal}
+}{}$c_{ij}=n \hat {\mu _i} - (n-1)\hat {\mu }_{i[-j]}$\end{document}, where \documentclass[12pt]{minimal}
+}{}$\hat {\mu }_{i[-j]}=z_{i[-j]}\sqrt {n/(n-1)}$\end{document} and \documentclass[12pt]{minimal}
+}{}$z_{i[-j]}=f({\textbf{x}}_{i[-j]}, {\textbf{y}}_{[-j]},{\textbf{V}}_{[-j]})$\end{document}. Our construction is designed to ensure that \documentclass[12pt]{minimal}
+}{}$r({\textbf{C}})\approx {\textbf{z}}$\end{document} (Figure 1), so that the resampling approach can work directly with \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} rather than the original data. Appendix A of Supplementary material available at Biostatistics online describes the process in more detail. For complex statistics involving nuisance parameters and GWAS-size data, computing \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} can be computationally intensive. However, for a large number of settings, score statistics can be used, are asymptotically equivalent to Wald and likelihood ratio statistics under the null, and are typically very close to these statistics even under the alternative. We describe in Appendix A of Supplementary material available at Biostatistics online how the score statistic approach can be used to provide a fast and accurate approximation to \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} without requiring the leave-one-out pseudovalue computation.
+Fig. 1. Flowchart of projack-\documentclass[12pt]{minimal}
+}{}$K$\end{document}.
+
+
+
+2.2. Prediction via the re-ordered jackknife
+Due to ranking bias, \documentclass[12pt]{minimal}
+}{}$z_{(i)}$\end{document} itself is typically a poor estimator of \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document}, unless the statistic is an isolated extreme value. The column structure of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} enables a drastic reduction in bias. Consider the new matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}_{[-j]}$\end{document}, which is identical to \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document}, except for removal of the \documentclass[12pt]{minimal}
+}{}$j$\end{document}th column. We use \documentclass[12pt]{minimal}
+}{}$(i)_{[-j]}$\end{document} as the index of the \documentclass[12pt]{minimal}
+}{}$i$\end{document}th ranked row mean of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}_{[-j]}$\end{document}. If \documentclass[12pt]{minimal}
+}{}$n$\end{document} is large, then ranking based on \documentclass[12pt]{minimal}
+}{}${\textbf{C}}_{[-j]}$\end{document}, which uses all but a single sample, typifies the behavior for sample size \documentclass[12pt]{minimal}
+}{}$n$\end{document}. However, because the \documentclass[12pt]{minimal}
+}{}$j$\end{document}th column has not been used for ranking, it is not subject to ranking bias. Accordingly, we use the element \documentclass[12pt]{minimal}
+}{}$c_{(i)_{[-j]},j}$\end{document} as indicative of \documentclass[12pt]{minimal}
+}{}$\mu _{(i)}$\end{document} for each \documentclass[12pt]{minimal}
+}{}$i$\end{document}.
+
+Using a single held-out column for our prediction is inefficient, so we proceed by performing the re-ordering procedure for each \documentclass[12pt]{minimal}
+}{}$j=1,\ldots ,n$\end{document} to create a new re-ordered matrix \documentclass[12pt]{minimal}
+}{}${\textbf{D}}$\end{document}, where \documentclass[12pt]{minimal}
+}{}$d_{ij}=c_{(i)_{[-j]},j}$\end{document}. Finally, we construct the estimator as \documentclass[12pt]{minimal}
+}{}$r({\textbf{D}})$\end{document}, i.e., \documentclass[12pt]{minimal}
+}{}$\hat {\delta }_{(i)}=\sum _{j=1}^n d_{ij}/n$\end{document}. Note that \documentclass[12pt]{minimal}
+}{}$\hat {\delta }_{(i)}$\end{document} serves as both an estimator of \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document} and a predictor of \documentclass[12pt]{minimal}
+}{}$\mu _{(i)}$\end{document}. We refer to this leave-one-out procedure, conducted for each \documentclass[12pt]{minimal}
+}{}$j$\end{document}, as the re-ordered jackknife. We note that for the idealized data structure, and if the effect sizes are constant, i.e., \documentclass[12pt]{minimal}
+}{}$\mu _i=\mu _0,$\end{document} for each \documentclass[12pt]{minimal}
+}{}$i\in \{1,\ldots ,n\}$\end{document}, the re-ordered jackknife is exactly unbiased. This follows from the fact that the row means of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}_{[-j]}$\end{document} are independent of \documentclass[12pt]{minimal}
+}{}${\textbf{c}}_{.j}$\end{document}. It further follows that each element of \documentclass[12pt]{minimal}
+}{}$d_{ij}$\end{document}, and therefore \documentclass[12pt]{minimal}
+}{}$\hat \delta _{(i)}$\end{document}, has expectation \documentclass[12pt]{minimal}
+}{}$\mu _0$\end{document}. Table 1 and Appendix B of Supplementary material available at Biostatistics online illustrate the re-ordering procedure for a small dataset, with \documentclass[12pt]{minimal}
+}{}$m=5$\end{document}, \documentclass[12pt]{minimal}
+}{}$n=4$\end{document}, obtained by drawing each element as iid \documentclass[12pt]{minimal}
+}{}$N(0,n)$\end{document}, i.e., \documentclass[12pt]{minimal}
+}{}$\mu _0=0$\end{document}. Most of the \documentclass[12pt]{minimal}
+}{}$\hat \delta _{(.)}$\end{document} values have been shrunken toward zero in comparison with \documentclass[12pt]{minimal}
+}{}$z_{(.)}$\end{document}, as expected.
+
+2.3. \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold stabilization
+The re-ordered jackknife has only slight bias, as each of the re-orderings is based on \documentclass[12pt]{minimal}
+}{}$n-1$\end{document} samples. However, the leave-one-out estimate is highly variable. Alternatively, we might accept somewhat greater bias in order to produce more stable estimates. We propose a cross-validation procedure in which columns are divided into \documentclass[12pt]{minimal}
+}{}$K$\end{document} equal subsets, and each portion held out in succession. We perform the cross-validation for a large number of random \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold partitions of the data, providing the extra stability. For a single partition, we let \documentclass[12pt]{minimal}
+}{}$J_k$\end{document} denote the set of \documentclass[12pt]{minimal}
+}{}$n/K$\end{document} samples belonging to the \documentclass[12pt]{minimal}
+}{}$k$\end{document}th subset. Define \documentclass[12pt]{minimal}
+}{}$c^\dagger _{ik}=(K/n) \sum _{j\in J_k} c_{ij}$\end{document} to create a new \documentclass[12pt]{minimal}
+}{}$m\times K$\end{document} matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}^\dagger$\end{document}. It is simple to show by central limit arguments that the row mean of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}^\dagger _{i.}$\end{document} is still approximately \documentclass[12pt]{minimal}
+}{}$N(\mu _i,1)$\end{document}, and for rank bias correction we can perform the re-ordered jackknife on \documentclass[12pt]{minimal}
+}{}${\textbf{C}}^\dagger$\end{document} to create a matrix \documentclass[12pt]{minimal}
+}{}${\textbf{D}}^\dagger$\end{document}. Performing the procedure for each random partition \documentclass[12pt]{minimal}
+}{}$\pi =1,\ldots ,\Pi$\end{document}, we produce re-ordered matrices \documentclass[12pt]{minimal}
+}{}${\textbf{D}}_1^\dagger ,{\textbf{D}}_2^\dagger , \ldots , {\textbf{D}}_\Pi ^\dagger$\end{document}, with elements \documentclass[12pt]{minimal}
+}{}$d^\dagger _{ik\pi }$\end{document}. Finally, we average over the \documentclass[12pt]{minimal}
+}{}$\Pi$\end{document} random partitions to produce \documentclass[12pt]{minimal}
+}{}$\hat {\delta }_{(i)}=(\sum _{\pi =1}^{\Pi } \sum _{k=1}^K d^\dagger _{ik\pi })/(\Pi K)$\end{document}. Together, the re-ordered jackknife and \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold stabilization/cross-validation are a coherent procedure to estimate the average effect size for ranked hypotheses, as shown in Figure 1. We refer to the entire procedure as the projack, for Prediction by Re-Ordered Jackknife and Cross-Validation, \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold.
+
+2.4. Performance for \documentclass[12pt]{minimal}
+}{}$K=5$\end{document} and \documentclass[12pt]{minimal}
+}{}$K=10$\end{document}, and for small samples
+We propose a choice of \documentclass[12pt]{minimal}
+}{}$K$\end{document} in the range of 5\documentclass[12pt]{minimal}
+}{}$-$\end{document}10 as striking a reasonable balance between bias and variability (similar to other work on cross-validation, Kohavi, 1995). Here we illustrate the \documentclass[12pt]{minimal}
+}{}$\hat {\boldsymbol \delta }_{(.)}$\end{document} bias and coverage performance with \documentclass[12pt]{minimal}
+}{}$n=50$\end{document} samples and \documentclass[12pt]{minimal}
+}{}$m=100$\end{document} hypotheses. We consider a variety of \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} vectors: (a) the null scenario where all \documentclass[12pt]{minimal}
+}{}$\mu _i=\mu _0$\end{document}, and without loss of generality we use \documentclass[12pt]{minimal}
+}{}$\mu _0=0$\end{document}; (b) a “sparse” scenario in which all but three hypotheses are null, \documentclass[12pt]{minimal}
+}{}${\boldsymbol \mu }=\{-6,-3,0,\ldots ,0,2\}$\end{document}; (c) \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} exactly following a standard normal empirical cdf, i.e., \documentclass[12pt]{minimal}
+}{}$\mu _i = \Phi ^{-1}(i/(m+1))$\end{document} for standard normal cdf \documentclass[12pt]{minimal}
+}{}$\Phi$\end{document}; (d) the “box”-shaped uniform \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} where the \documentclass[12pt]{minimal}
+}{}$\mu _i$\end{document} are equally spaced on the interval \documentclass[12pt]{minimal}
+}{}$[-2,2]$\end{document}. For each of the scenarios, we performed 1000 simulations, using \documentclass[12pt]{minimal}
+}{}$\Pi =50$\end{document} splits throughout. For each simulated matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document}, we used two choices of \documentclass[12pt]{minimal}
+}{}$K$\end{document} (5 and 10). In addition, we performed separate simulations in which the rows of \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} were uncorrelated with \documentclass[12pt]{minimal}
+}{}$\rho =0$\end{document}, or were moderately correlated with common \documentclass[12pt]{minimal}
+}{}$\rho =0.4$\end{document}.
+
+Figure 2 shows \documentclass[12pt]{minimal}
+}{}$E(z_{(i)})$\end{document}, \documentclass[12pt]{minimal}
+}{}$E(\hat {\delta }_{(i)})$\end{document}, and the true \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document} vs. \documentclass[12pt]{minimal}
+}{}$i$\end{document} for three of the 16 scenarios. The results for all 16 scenarios as well as mean-squared error (MSE) results are shown in Figures 3 and 4 of Supplementary material available at Biostatistics online. Although \documentclass[12pt]{minimal}
+}{}$E({\boldsymbol{{ {z}}}}_{(.)})$\end{document} shows the clear bias as anticipated, both projack-5 and projack-10 are nearly unbiased, as shown by the close correspondence of \documentclass[12pt]{minimal}
+}{}$E(\hat {\delta }_{(i)})$\end{document} and \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document} in the figure. A slight bias can be seen for the sparse scenario for hypothesis \documentclass[12pt]{minimal}
+}{}$i=2$\end{document}. Note that under the sparse scenario, \documentclass[12pt]{minimal}
+}{}$\delta _{(1)}$\end{document} is nearly equal to \documentclass[12pt]{minimal}
+}{}$\mu _1= -6$\end{document}, which is an outlying hypothesis and has rank 1 with high probability. This is an illustration of the desirable property of projack to not shrink outlying values, as these values largely maintain their original ranks in the re-ordered jackknife. Simulations for \documentclass[12pt]{minimal}
+}{}$m=10$\end{document} are qualitatively similar (not shown). We note that results do not depend much on the sample size, provided \documentclass[12pt]{minimal}
+}{}$n$\end{document} is large enough to permit numerous \documentclass[12pt]{minimal}
+}{}$K$\end{document}-splits, because of the variance scaling implicit in each \documentclass[12pt]{minimal}
+}{}$z_i$\end{document}. The MSE results are favorable for \documentclass[12pt]{minimal}
+}{}$i$\end{document} near 1 or \documentclass[12pt]{minimal}
+}{}$m$\end{document} (Figure 4 of Supplementary material available at Biostatistics online). In summary, the projack is an effective bias reduction approach under a variety of scenarios. In Appendix D and File 2 of Supplementary material available at Biostatistics online, we investigate small sample performance with \documentclass[12pt]{minimal}
+}{}$n=\{5, 10, 20\}$\end{document} for data that may be skewed. Our conclusions are that the projack remains useful for \documentclass[12pt]{minimal}
+}{}$n$\end{document} as small as 10, provided the data are not highly skewed.
+Fig. 2. The low bias of the projack is illustrated for several scenarios described in the text.
+
+
+
+2.5. Performance under the null for GWAS data
+Here we illustrate the difficulty in providing unbiased rank effect estimates by analyzing null GWAS data. We used simulated association data using genotypes from the HapMap JPT\documentclass[12pt]{minimal}
+}{}$+ $\end{document}CHB example dataset on the PLINK web site (\documentclass[12pt]{minimal}
+}{}$n=89$\end{document} individuals and \documentclass[12pt]{minimal}
+}{}$m=68\,757$\end{document} informative SNP markers). For each of 100 simulations, we generated random 45 cases and 44 controls as “phenotypes,” independently of genotypes. For this complete null scenario, we obtained effect size estimates (expressed as \documentclass[12pt]{minimal}
+}{}$\mu$\end{document} estimates) using BR-squared and the conditional likelihood approach for \documentclass[12pt]{minimal}
+}{}$c$\end{document} values of 1.96, 3.48, and 5.45, corresponding to \documentclass[12pt]{minimal}
+}{}$p$\end{document}-value thresholds of 0.05, 0.0005, and \documentclass[12pt]{minimal}
+}{}$5\times 10^{-8}$\end{document}, respectively. In addition, we implemented projack-5 and projack-10. An unbiased estimation procedure will produce average effect estimates of zero for all genomic features, and we computed \documentclass[12pt]{minimal}
+}{}$z$\end{document} as the Cochran-Armitage trend statistic for each SNP genotype vs. case–control status. Appendix E and Figure 5 of Supplementary material available at Biostatistics online depict the average estimates produced by BR-Squared, projack-5, projack-10, and the conditional likelihood approaches. For extreme \documentclass[12pt]{minimal}
+}{}$i$\end{document}, both BR-Squared and the conditional likelihood approaches exhibit considerable bias in the same direction of the original ranked statistics, except for the conditional likelihood when using the threshold \documentclass[12pt]{minimal}
+}{}$p\lt 5\times 10^{-8}$\end{document}, as almost all values were shrunk to zero. However, it is difficult to recommend the conditional likelihood for such an extreme threshold, as later simulations show that it can shrink indiscriminately and “miss” features that are important but not genome-wide significant. The bias in BR-Squared was quite substantial, with average effect estimates of roughly \documentclass[12pt]{minimal}
+}{}$-2.0$\end{document} and 1.5 for \documentclass[12pt]{minimal}
+}{}$i=1$\end{document} and \documentclass[12pt]{minimal}
+}{}$i=m$\end{document}, respectively. The projack approaches show almost no bias.
+
+3. The independent projack
+For a number of problems, a single vector of \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document} is observed. Without the original data, methods such as BR-Squared are not applicable, as the data cannot be subdivided for resampling. However, we can extend our projack to this setting by making the following observations. First, we show in Appendix F of Supplementary material available at Biostatistics online that, under the idealized form of the data, for large samples the projack is well approximated by Algorithm 1.
+
+Algorithm 1. The independent projack
+
+1:	Simulate a vector \documentclass[12pt]{minimal}
+}{}${\textbf{z}}^{\prime }={\textbf{z}}+ {\boldsymbol \gamma }$\end{document}, where the \documentclass[12pt]{minimal}
+}{}$\{\gamma _i\}$\end{document} are drawn iid \documentclass[12pt]{minimal}
+}{}$N(0,1/(K-1))$\end{document}.	
+2:	Compute a new vector \documentclass[12pt]{minimal}
+}{}${\textbf{c}}=K {\textbf{z}}-(K-1){\textbf{z}}^{\prime }$\end{document}, and reorder to create \documentclass[12pt]{minimal}
+}{}${\textbf{d}}={\textbf{c}}_{(.)}$\end{document}, where (importantly) the re-ordering is based on \documentclass[12pt]{minimal}
+}{}${\textbf{z}}^\prime$\end{document}.	
+3:	Repeat steps 1–2, averaging over many ordered simulated vectors \documentclass[12pt]{minimal}
+}{}${\textbf{d}}$\end{document} to obtain \documentclass[12pt]{minimal}
+}{}$\hat {\delta }_{(.)}$\end{document}.	
+
+This algorithm for the independent projack is not immediately obvious, and results from a consideration of a hypothetical matrix \documentclass[12pt]{minimal}
+}{}${\textbf{C}}$\end{document} such that \documentclass[12pt]{minimal}
+}{}$r({{\textbf{C}}})={\textbf{z}}$\end{document}, and approximate bivariate normality of the row means for the training and test portions. An important advantage to the independent projack is that \documentclass[12pt]{minimal}
+}{}$K$\end{document} no longer need to be an integer or a divisor of \documentclass[12pt]{minimal}
+}{}$n$\end{document}, and the entire range \documentclass[12pt]{minimal}
+}{}$K\in (1,\infty )$\end{document} is available, although in practice values in the range 5–10 may be advisable.
+
+We recommend performing the simulations at least 1000 times, in order to minimize stochastic variation. Each simulation step of the independent projack corresponds to a single random \documentclass[12pt]{minimal}
+}{}$K$\end{document}-fold split of the projack, and so the independent projack is somewhat faster and uses much less memory (handling vectors rather than matrices).
+
+3.1. The psoriasis example, continued
+We return to the psoriasis example described in Section 1, using the independent projack and competing methods. For the independent projack, we augmented \documentclass[12pt]{minimal}
+}{}$z$\end{document} statistics for the observed “top” SNPs with additional artificial \documentclass[12pt]{minimal}
+}{}$m-10$\end{document} SNPs with each \documentclass[12pt]{minimal}
+}{}$z_i=\Phi (i/(m-9))$\end{document}, and \documentclass[12pt]{minimal}
+}{}$m=480\,000$\end{document}. For BR-Squared, we used the results as reported in Faye and others (2011). For the conditional likelihood approaches, we used \documentclass[12pt]{minimal}
+}{}$c$\end{document} values of 1.96, 3.48, and 5.45, corresponding to \documentclass[12pt]{minimal}
+}{}$p$\end{document}-value thresholds of 0.05, 0.0005, and \documentclass[12pt]{minimal}
+}{}$5\times 10^{-8}$\end{document}, respectively. Figure 3 shows the results of the analysis. The left panel (black dots) shows the naive estimates vs. replication odds ratios, which are all above the unit line. Both BR-Squared and projack-5 appear to overshrink somewhat for the SNPs of moderate effect, but the projack is less aggressive than BR-Squared for the SNPs of smallest effect. The curve in the right panel shows the projack squared error averaged across the 10 SNPs as a function of \documentclass[12pt]{minimal}
+}{}$K$\end{document}. The error is minimized for \documentclass[12pt]{minimal}
+}{}$K=6$\end{document}, which is also the minimum value in terms of mean absolute bias and median absolute bias (not shown). The plot also shows the results for the naive uncorrected estimates, BR-Squared, and the conditional likelihood (the result for \documentclass[12pt]{minimal}
+}{}$c=5.45$\end{document} is at 0.032, out of plotting range). In this example, projack dominates BR-Squared throughout the \documentclass[12pt]{minimal}
+}{}$K=5$\end{document}–10 range, but the conditional likelihood for \documentclass[12pt]{minimal}
+}{}$p\lt 0.0005$\end{document} performs relatively well. Analysis of a recent genome-wide association scan for hypospadias-associated loci shows similar results (Appendix G of Supplementary material available at Biostatistics online).
+Fig. 3. Results for the 10 SNPs from the psoriasis dataset. Left panel: Estimates based on original GWAS (\documentclass[12pt]{minimal}
+}{}$y$\end{document}-axis) vs. replication values used as a “gold standard” (\documentclass[12pt]{minimal}
+}{}$x$\end{document}-axis). Right panel: Mean of \documentclass[12pt]{minimal}
+}{}$(\hat {\beta }_i-\beta _i)^2$\end{document} values across the SNPs for the various bias-correction approaches.
+
+
+
+3.2. GWAS simulations
+Here we decribe additional simulations, using 875 samples from the 1000 Genomes project, as described in Abdo and others (2015) and retaining SNPs with minor allele frequency \documentclass[12pt]{minimal}
+}{}$\ge 0.05$\end{document}, for \documentclass[12pt]{minimal}
+}{}$\sim$\end{document}1.41 million SNPs. The genotypes were adjusted for the top 20 principal components, to ensure that effects for putative causal SNPs would not carry across distant genomic regions due to population stratification. We simulated quantitative phenotypes \documentclass[12pt]{minimal}
+}{}$y$\end{document} according to a model in which some genotyped SNPs were selected as causal, and for the \documentclass[12pt]{minimal}
+}{}$j$\end{document}th individual \documentclass[12pt]{minimal}
+}{}$y_j=\sum _{i \in {\rm causal}}\beta _i x_{ij}+ \epsilon _j$\end{document}, where \documentclass[12pt]{minimal}
+}{}$\epsilon \sim N(0,1)$\end{document}. The \documentclass[12pt]{minimal}
+}{}$\beta$\end{document} values were determined by first computing null standard errors for each causal SNP, selecting \documentclass[12pt]{minimal}
+}{}$\mu$\end{document} values as described below, and then computing each \documentclass[12pt]{minimal}
+}{}$\beta =\mu SE$\end{document}. Two scenarios were considered: (i) a multi-SNP scenario with 20 causal SNPs, with six extreme SNPs having \documentclass[12pt]{minimal}
+}{}$\mu =\{-12, -8, -6, 6, 8, 12\}$\end{document}, respectively, and the \documentclass[12pt]{minimal}
+}{}$\mu$\end{document} values for the remaining 14 SNPs uniformly spaced in the range \documentclass[12pt]{minimal}
+}{}$\{-2,2\}$\end{document}; (ii) a few-SNP scenario in which only two SNPs were chosen to be causal, with true underlying \documentclass[12pt]{minimal}
+}{}$\mu =\{-7,7\}$\end{document}.
+
+For genotype data, due to the presence of linkage disequilibrium, SNPs nearby the causal SNPs will also exhibit association with the trait. For causal SNP \documentclass[12pt]{minimal}
+}{}$i$\end{document} and nearby SNP \documentclass[12pt]{minimal}
+}{}$i^\prime$\end{document}, the effect size at \documentclass[12pt]{minimal}
+}{}$i^\prime$\end{document} is \documentclass[12pt]{minimal}
+}{}$\mu _{i^\prime }=r_{i,i^\prime } \mu _i$\end{document}, where \documentclass[12pt]{minimal}
+}{}$r_{i,i^\prime }$\end{document} is the genotype correlation between the two SNPs. Thus for each causal SNP, we consider SNPs nearby (200 SNPs upstream and downstream) as also “alternative,” provided \documentclass[12pt]{minimal}
+}{}$r_{i,i^\prime }^2 >0.05$\end{document}. Quantitative phenotypes were simulated 100 times for each of the two scenarios, with the genotypes held fixed, and thus representing realistic linkage disequilibrium structure. As a large proportion of the genotypes were imputed, BR-Squared could not be used. However, the conditional likelihood approach can be used, and here we used the same values of \documentclass[12pt]{minimal}
+}{}$c$\end{document} as used for the psoriasis data. The true \documentclass[12pt]{minimal}
+}{}$\boldsymbol {\delta }_{(.)}$\end{document} was obtained by averaging for each row of the \documentclass[12pt]{minimal}
+}{}$\boldsymbol {\mu }_{(.)}$\end{document} matrix, i.e., each column of \documentclass[12pt]{minimal}
+}{}$\boldsymbol \mu$\end{document} sorted according to the \documentclass[12pt]{minimal}
+}{}${\textbf{z}}$\end{document} vector for each simulation. Even for the “few-SNP” scenario, \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document} can differ noticeably from zero for (say) \documentclass[12pt]{minimal}
+}{}$i=100$\end{document}, largely due to the effect of linkage disequilibrium on SNPs nearby to the causal SNPs.
+
+Figure 4 (upper left) illustrates the results of a single simulation from these data across the genome for the multi-SNP simulation, with the locations of the 20 causal SNPs indicated. The true \documentclass[12pt]{minimal}
+}{}$\delta _{(i)}$\end{document} was computed for each \documentclass[12pt]{minimal}
+}{}$i$\end{document}, and many \documentclass[12pt]{minimal}
+}{}$>$\end{document}20 of these values are far from zero, due to linkage disequilibrium capturing additional SNPs. These values are compared with expected estimates for two of the conditional likelihood approaches and projack-5 in the figure, showing that projack-5 is nearly unbiased. Table 2 shows the results in terms of mean-squared error averaged over collections of “top” SNPs (AMSE). For example, the top 20 entries consist of averaging estimates over simulations and over the SNPs with the 10 smallest (most highly negative) and 10 highest \documentclass[12pt]{minimal}
+}{}$z$\end{document} statistics. Let \documentclass[12pt]{minimal}
+}{}$\hat {\delta }_{i,s}$\end{document} denote the projack estimate for the \documentclass[12pt]{minimal}
+}{}$i$\end{document}th ranked feature in simulation \documentclass[12pt]{minimal}
+}{}$s$\end{document} of a total \documentclass[12pt]{minimal}
+}{}$S$\end{document} simulations. Then \documentclass[12pt]{minimal}
+}{}${\rm AMSE}=({1}/{S}) \sum _{s=1}^{S} ({1}/{T}) \{\sum _{i=1}^{T/2} (\hat {\delta }_{i,s}-\delta _i)^2 + \sum _{i=m-T/2}^{m} (\hat {\delta }_{i,s}-\delta _i)^2 \},$\end{document} and the same calculations were performed for the conditional likelihood. The results are shown in Table 2 for both scenarios. Note that the AMSE incorporates the effects of both bias, already shown to be low with projack, and variance. Projack-5 has the lowest AMSE in four of the six situations described, and is always among the top two (boldface). For the multi-SNP scenario and ranking the top 20 SNPs, the conditional likelihood with \documentclass[12pt]{minimal}
+}{}$p\lt 0.0005$\end{document} has the lowest MSE. However, for other situations, the same approach performs poorly, while the conditional likelihood with \documentclass[12pt]{minimal}
+}{}$p\lt 5\times 10^{-8}$\end{document} performs better. One difficulty lies in the fact that the conditional likelihood is not adaptive to the data at hand, while projack, based on perturbations from the observed data, is inherently and automatically adaptive.
+Table 2. Mean squared errors for the various \documentclass[12pt]{minimal}
+}{}$\boldsymbol {\delta }_{()}$\end{document} estimation approaches
+
+Method	Multi-SNP	Few-SNP	
+Top 20	Top 100	Top 200	Top 20	Top 100	Top 200	
+indep. projack-5	3.23	1.03	0.53	2.87	0.97	0.53	
+indep. projack-10	4.38	1.37	0.72	3.90	1.52	0.87	
+cond. like (\documentclass[12pt]{minimal}
+}{}$p\lt 0.05$\end{document})	2.81	10.66	12.12	10.73	14.50	14.45	
+cond. like (\documentclass[12pt]{minimal}
+}{}$p\lt 0.0005$\end{document})	2.44	6.60	5.35	9.07	9.42	6.99	
+cond. like (\documentclass[12pt]{minimal}
+}{}$p\lt 5\times 10^{-8}$\end{document})	6.66	2.42	1.25	4.09	1.01	0.52	
+Boldface indicates the two lowest values in each column.
+
+
+Fig. 4. Simulations for the multi-SNP scenario with 20 causal SNPs among 1.4 milllion SNPs. Upper left: Manhattan plot of \documentclass[12pt]{minimal}
+}{}${\rm -log}_{10}(p)$\end{document} for a single simulation, with causal loci indicated as large dots. Upper right: Over 100 simulations, comparison of \documentclass[12pt]{minimal}
+}{}$E(\tilde {\mu }_{(.)})$\end{document} vs. \documentclass[12pt]{minimal}
+}{}$\mu _{(.)}$\end{document} for the conditional likelihood using threshold \documentclass[12pt]{minimal}
+}{}$p\lt 0.05$\end{document}, across all 1.4 million SNPs, for which an unbiased method would dots on the unit line. A vast majority of values are near the origin. Lower left: results from the conditional likelihood approach using \documentclass[12pt]{minimal}
+}{}$p\lt 0.0005$\end{document}. Lower right: results for projack-\documentclass[12pt]{minimal}
+}{}$5$\end{document}.
+
+
+
+4. Discussion
+We have attempted to describe the important aspects of the ranked estimation problem. Our proposed solution is a frequentist general resampling method for prediction of ranked effects and estimation of normal means, without explicit smoothing or Bayesian inference. The projack is ready to be used as a low-bias estimator/predictor of ranked effects in large-scale multiple testing settings. Further work remains in fully understanding the tradeoffs between bias and variance, although choices of \documentclass[12pt]{minimal}
+}{}$K$\end{document} in the range of 5–10 appear to work well. When the original data are available, part of the appeal of projack lies in its use of the observed data correlation structure, and there is no inherent difficulty posed by datasets in which \documentclass[12pt]{minimal}
+}{}$m \gg n$\end{document}. Extensions of projack may include analogues to penalized regression, as the shrinkage inherent in the approach could be applied to regression coefficients. However, considerable work would remain in choosing appropriate penalty conditions, especially in sparse coefficient settings.
+
+5. Software
+}{}$R$\end{document} software is available upon request.
+
+Funding
+This study is supported in part by NIH
+R01MH101819 and NSF
+DMS-1127914. Funding to pay the Open Access publication charges for this article was provided by institutional funds at North Carolina State University.
+
+Supplementary Material
+Supplementary Data
+ Acknowledgements
+Conflict of Interest: None declared.
+References
+Abdo N. , Xia M. , Brown C. C. , Kosyk O. , Huang R. , Sakamuru S. , Zhou Y. H. , Jack J. R. , Gallins P. , Xia K.  
+and others (2015 ). Genetic mapping of in vitro susceptibility to cytotoxic compounds – the 1000 genomes high throughput screening study . Environmental Health Perspectives 
+123 (5 ), 458 –466 .25622337 
+Efron B. , Morris C.   (1973 ). Stein's estimation rule and its competitors–an Empirical Bayes approach . Journal of the American Statistical Association 
+68 (341 ), 117 –130 .
+Efron B. , Morris C.   (1975 ). Data analysis using Stein's estimator and its generalizations . Journal of the American Statistical Association 
+70 (350 ), 311 –319 .
+Faye L. L. , Sun L. , Dimitromanolakis A. , Bull S. B.   (2011 ). A flexible genome-wide bootstrap method that accounts for ranking and threshold-selection bias in GWAS interpretation and replication study design . Statistics in Medicine 
+30 (15 ), 1898 –1912 .21538984 
+Ghosh A. , Nobel A. B. , Zou F. , Wright F. A.   (2014 ). Variable selection and shrinkage via a conditional likelihood-based penalty . Journal of the Indian Society of Agricultural Statistics 
+68 , 227 –236 .
+Ghosh A. , Zou F. , Wright F. A.   (2008 ). Estimating odds ratios in genome scans: an approximate conditional likelihood approach . American Journal of Human Genetics 
+82 (5 ), 1064 –1074 .18423522 
+James W. , Stein C.   (1961 ). Estimation with quadratic loss . Proceedings of the Fourth Berkeley Symposium on Mathematical Statistics and Probability 
+1 , 361 –379 .
+Jiang W. , Zhang C. H.   (2009 ). General maximum likelihood empirical Bayes estimation of normal means . The Annals of Statistics 
+37 (4 ), 1647 –1684 .
+Johnstone I. M. , Silverman B. W.   (2004 ). Needles and straw in haystacks: empirical Bayes estimates of possibly sparse sequences . Annals of Statistics 
+32 (4 ), 1594 –1649 .
+Kohavi R.   (1995 ). A study of cross-validation and bootstrap for accuracy estimation and model selection . Proceedings of International Joint Conference on AI 
+2 , 1137 –1145 .
+Nair R. P. , Duffin K. C. , Helms C. , Ding J. , Stuart P. E. , Goldgar D. , Gudjonsson J. E. , Li Y. , Tejasvi T. , Feng B. J.  
+and others (2009 ). Genome-wide scan reveals association of psoriasis with IL-23 and NF-kappaB pathways . Nature Genetics 
+41 (2 ), 199 –204 .19169254 
+Robbins H.   (1956 ). An empirical Bayes approach to statistics . Proceedings of the Third Berkeley Symposium on Mathematical Statistics and Probability 
+1 , 157 –163 .
+Sun L. , Bull S. B.   (2005 ). Reduction of selection bias in genomewide studies by resampling . Genetic Epidemiology 
+28 (4 ), 352 –367 .15761913 
+Zhang J. , Li Y. , Abecasis G. R. , Scheet P.   (2011 ). A comparison of approaches to account for uncertainty in analysis of imputed genotypes . Genetic Epidemiology 
+35 , 102 –110 .21254217 
+Zhong H. , Prentice R. L.   (2008 ). Bias-reduced estimators and confidence intervals for odds ratios in genome-wide association studies . Biostatistics 
+9 (4 ), 621 –634 .18310059
