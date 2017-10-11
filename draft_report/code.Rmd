@@ -1,0 +1,249 @@
+---
+title: "code clean"
+author: "Gege Gui"
+---
+
+```{r}
+install.packages("rplos")
+install.packages("stringr")
+install.packages("ggplot2")
+install.packages("tm")
+install.packages("tidytext")
+install.packages("dplyr")
+install.packages("topicmodels")
+library("rplos")
+library("stringr")
+library("ggplot2")
+library("tm")
+library("tidytext")
+library("dplyr")
+library("topicmodels")
+```
+
+## PLoS R package
+
+```{r, eval=FALSE}
+# Get only full article DOIs
+id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
+
+dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis","bootstrap","maximum likelihood","MCMC","neural network","support vector machine","clustering","principal component","independent component","random forest","graphical model", "Kaplan", "Cox proportional")
+# "EM algorithm",
+
+l = list()
+for (i in 1:length(dic)){
+  id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date desc', start=0)
+  a = id$meta$numFound
+  id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date asc', start=0, limit = a)
+  l[[i]] = id$data$publication_date
+}
+```
+
+```{r}
+getdate = function(strg){
+  library("stringr")
+  d = str_split(strg, pattern = fixed("T"), simplify = T)[1]
+  return(d)
+}
+
+countmonth = function(v, name){
+  d = sapply(v, getdate)
+  s = str_split(d, pattern = fixed("-"), simplify = T)[, 1:2]
+  out = as.data.frame(rep(0, 10 * 12))
+  rownames(out) = paste(as.vector(sapply(2007:2016, function(x){return(rep(x, 12))})), "-", rep(1:12, 10), sep = "")
+  colnames(out) = name
+  s = matrix(as.numeric(s), nrow = nrow(s))
+  a = matrix(rep(0, 10*12), nrow = 10)
+  for (i in 2007:2016){
+    for (j in 1:12){
+      a[i - 2006, j] = sum(s[,1] == i & s[, 2] == j)
+    }
+  }
+  out[,1] = as.vector(t(a))
+  return(out)
+}
+
+countyear = function(v, name){
+  d = sapply(v, getdate)
+  s = str_split(d, pattern = fixed("-"), simplify = T)[, 1]
+  out = as.data.frame(rep(0, 10))
+  rownames(out) = 2007:2016
+  colnames(out) = name
+  s = as.numeric(s)
+  for (i in 2007:2016){
+      out[i - 2006,1] = sum(s == i)
+    }
+  return(out)
+}
+
+count_month = countmonth(l[[1]], dic[1])
+for (i in 2:length(l)){
+  count_month = cbind(count_month, countmonth(l[[i]], dic[i]))
+}
+
+count_year = countyear(l[[1]], dic[1])
+for (i in 2:length(l)){
+  count_year = cbind(count_year, countyear(l[[i]], dic[i]))
+}
+```
+
+Plot total count
+
+```{r}
+s = rep(NA, length(dic))
+for (i in 1:length(l)){
+  s[i] = length(l[[i]])
+}
+
+dic2 = dic[order(s)]
+s2 = sort(s)
+df = data.frame(dic2, s2)
+
+p = ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2, fill = reorder(dic2, -s2))) + geom_bar(stat="identity")
+p + coord_flip() + labs(x = "count in paper", y = "statistical topics", fill = "statistical topics") + geom_text(aes(label = s2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) 
+```
+
+Plot trend over time
+
+Plot those with more than 1000 count.
+
+```{r}
+name_list = as.character(df[df$s2 >= 1000, 1])
+plot_year = count_year[,colnames(count_year) %in% name_list]
+date = 2007:2016
+ggyear = function(i) {
+  out = paste("+ geom_line(aes(y = plot_year[,", i, "],colour = name_list[",  i, "]))", sep = "")
+  return(out)
+}
+eval(parse(text = paste("ggplot(data=plot_year, aes(date))", paste((sapply(1:10, ggyear)), collapse = "")))) + labs(title="Year count for count > 1000", x ="Time", y = "Count", colour = "Statistical method")
+
+ 
+
+plot_year_prob = sweep(plot_year,2,colSums(plot_year), "/")
+ggyear_prob = function(i) {
+  out = paste("+ geom_line(aes(y = plot_year_prob[,", i, "],colour = name_list[",  i, "]))", sep = "")
+  return(out)
+}
+eval(parse(text = paste("ggplot(data=plot_year_prob, aes(date))", paste((sapply(1:10, ggyear_prob)), collapse = "")))) + labs(title="Year count probability for count > 1000", x ="Time", y = "Probability in year", colour = "Statistical method")
+
+```
+
+
+## Topic model
+
+```{r, eval=FALSE}
+# dsource = DirSource(directory = "/Users/gege/Downloads/PLoS_Curr")
+# dictionary = scan("/Users/gege/Dropbox/graduate/DataScience/project/Data/words.txt", character(), quote = "")
+load("data.RData")
+file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
+origfile = file
+```
+
+Remove numbers
+
+```{r}
+for (i in 1:length(file)){
+  file[[i]] = removeNumbers(file[[i]])
+}
+```
+
+From VCorpus to dataframe
+
+```{r}
+tidy_file = tidy(file)
+tidyfile = tidy_file[,c("id", "text")]
+```
+
+Keep words in this list of English words: 
+
+Unnest the tokens, remove the stopwords.
+
+```{r}
+fileunnest = tidyfile %>% unnest_tokens(word, text) 
+file_words = anti_join(fileunnest, stop_words) 
+```
+
+Remove the 20 most frequent words.
+
+```{r}
+file_count = as.vector(table(file_words[, colnames(file_words) %in% "word"]))
+file_count2 = rownames(as.matrix(table(file_words[, colnames(file_words) %in% "word"])))
+word_freq = file_count2[order(file_count, decreasing = T)][1:20]
+
+wholevol = unique(fileunnest$word)
+file_word = file_words[file_words$word %in% dictionary, ]
+antistopword = unique(file_word$word)
+newstopword = union(setdiff(wholevol, antistopword), word_freq)
+new_stop = as.data.frame(t(newstopword))
+colnames(new_stop) = "word"
+f_word = anti_join(as.data.frame(fileunnest), new_stop)
+```
+
+Word in file count
+
+```{r, eval=FALSE}
+filefreq = f_word %>%
+  group_by(id) %>%
+  count(word) %>%
+  filter(n > 5)
+```
+
+```{r}
+getmethod = function(f){
+  out = f
+  lselect = rep(TRUE, length(f))
+  for (j in 1:length(f)){
+    text = f[[j]]$content
+    sent_wc = rep(NA, length(text))
+    method = rep(0, length(text))
+    result = method
+    
+    for (i in 1:length(text)){
+      unnest = unlist(str_split(removePunctuation(text[i]), pattern = " ")) 
+      words = unnest[unnest != ""]
+      sent_wc[i] = length(words)
+      method[i] = sum(words %in% c("Method", "Methods", "Methodology"))
+      result[i] = sum(words %in% c("Results", "Discussion", "Supporting"))
+    }
+    
+    start = which(method == 1 & sent_wc < 4)[1]
+    end = which(result == 1 & sent_wc < 4)[1]
+    
+    if ((is.na(start) | is.na(end)) | (start >= end)){
+      lselect[j] = FALSE
+    } else{
+    index = which(sent_wc > 1) 
+    ind = index[index > start & index < end]
+    out[[j]]$content = text[ind]
+    }
+  }
+  return(out[lselect])
+}
+
+method_file = getmethod(file)
+```
+
+```{r}
+# t_file = DocumentTermMatrix(file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = c(stopwords("english"), newstopword))) 
+t_file = DocumentTermMatrix(method_file, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stopwords = c(stopwords("english"), newstopword))) 
+rowTotals = apply(t_file, 1, sum) #Find the sum of words in each Document
+t_file = t_file[rowTotals> 0, ] 
+
+topic = 5
+lda = LDA(t_file, topic)
+lda_inf = posterior(lda)
+article = lda_inf[[2]]
+term = lda_inf[[1]]
+term_pos = matrix(rep(NA, 20 * nrow(term)), nrow = nrow(term))
+
+n = 25
+wo = as.data.frame(matrix(rep(NA, topic * n), ncol = topic))
+colnames(wo) = 1:5 
+rownames(wo) = paste(rep("word", n), 1:n)
+for (i in 1:nrow(term)){
+  dat = term[i, ]
+  name = colnames(term)
+  or = order(dat, decreasing = T)
+  wo[,i] = name[or[1:n]]
+}
+print.data.frame(wo)
+```
