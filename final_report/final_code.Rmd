@@ -4,15 +4,19 @@ author: "Gege Gui"
 ---
 
 ```{r}
-install.packages("devtools")
+# Slack group (Shannon)
+packages = c("devtools", "stringr", "ggplot2", "tm", "tidytext", "dplyr", "topicmodels")
+
+for (i in packages){
+  if(!require(i,character.only = T,quietly=T,warn.conflicts = F)){
+    install.packages(i, repos = "http://cran.us.r-project.org")
+  }
+  require(i,character.only = T,quietly=T,warn.conflicts = F)
+}
+
 devtools::install_github("ropensci/rplos")
-install.packages("stringr")
-install.packages("ggplot2")
-install.packages("tm")
-install.packages("tidytext")
-install.packages("dplyr")
-install.packages("topicmodels")
-load("data.RData")
+
+load("final_data.RData")
 ```
 
 ```{r}
@@ -160,21 +164,6 @@ ggmonth_prob = function(i) {
 eval(parse(text = paste("ggplot(data=plot_month_prob, aes(date_m))", paste((sapply(1:10, ggmonth_prob)), collapse = "")))) + labs(title="month count probability for count > 1000", x ="Time", y = "Probability in month", colour = "Statistical methods")
 ```
 
-Remove the mostly used method
-
-```{r}
-ggyear_norm = function(i) {
-  out = paste("+ geom_line(aes(y = plot_year_norm[,", i, "],colour = colnames(plot_year_norm)[",  i, "]), size = 1.2)", sep = "")
-  return(out)
-}
-# remove principal component
-newname_list = name_list[1:9]
-eval(parse(text = paste("ggplot(data=newplot_year_norm, aes(date))", paste((sapply(c(1:10)[colnames(plot_year_norm) %in% newname_list], ggyear_norm)), collapse = "")))) + labs(title="Year count probability for count > 1000", x ="Time", y = "Probability in year", colour = "Statistical methods")
-# remove clustering and independent component
-newnamelist = name_list[1:7]
-eval(parse(text = paste("ggplot(data=newplot_year_norm, aes(date))", paste((sapply(c(1:10)[colnames(plot_year_norm) %in% newnamelist], ggyear_norm)), collapse = "")))) + labs(title="Year count probability for count > 1000", x ="Time", y = "Probability in year", colour = "Statistical methods")
-```
-
 Normalizing by count every month
 
 ```{r}
@@ -193,7 +182,7 @@ eval(parse(text = paste("ggplot(data=plot_month_norm, aes(date_m))", paste((sapp
 ```{r}
 # dsource = DirSource(directory = "/Users/gege/Downloads/PLoS_Curr")
 # dictionary = scan("/Users/gege/Dropbox/graduate/DataScience/project/Data/words.txt", character(), quote = "")
-file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
+# file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
 origfile = file
 ```
 
@@ -317,6 +306,7 @@ for (i in 1:nrow(term)){
 
 to = apply(article, 1, which.max)
 to.prob = apply(article, 1, max)
+print.data.frame(wo)
 ```
 
 ```{r}
