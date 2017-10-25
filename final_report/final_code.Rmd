@@ -37,13 +37,13 @@ id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:f
 
 dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis","bootstrap","maximum likelihood","MCMC","neural network","support vector machine","clustering","principal component","independent component","random forest","graphical model", "Kaplan", "Cox proportional")
 
-l = list()
-for (i in 1:length(dic)){
-  id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date desc', start=0)
-  a = id$meta$numFound
-  id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date asc', start=0, limit = a)
-  l[[i]] = id$data$publication_date
-}
+# l = list()
+# for (i in 1:length(dic)){
+#   id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date desc', start=0)
+#   a = id$meta$numFound
+#   id = searchplos(paste("abstract:", dic[i]), fl='id, publication_date', sort = 'publication_date asc', start=0, limit = a)
+#   l[[i]] = id$data$publication_date
+# }
 ```
 
 ```{r}
@@ -285,7 +285,7 @@ rowTotals = apply(t_file, 1, sum) #Find the sum of words in each Document
 t_file = t_file[rowTotals> 0, ] 
 
 topic = 5
-lda = LDA(t_file, topic)
+# lda = LDA(t_file, topic)
 lda_inf = posterior(lda)
 
 
