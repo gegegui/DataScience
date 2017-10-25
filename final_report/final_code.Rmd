@@ -12,6 +12,7 @@ install.packages("tm")
 install.packages("tidytext")
 install.packages("dplyr")
 install.packages("topicmodels")
+load("data.RData")
 ```
 
 ```{r}
@@ -26,7 +27,7 @@ library("topicmodels")
 
 ## PLoS R package
 
-```{r, eval=FALSE}
+```{r}
 # Get only full article DOIs
 id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
 
@@ -189,10 +190,9 @@ eval(parse(text = paste("ggplot(data=plot_month_norm, aes(date_m))", paste((sapp
 
 ## Topic model
 
-```{r, eval=FALSE}
+```{r}
 # dsource = DirSource(directory = "/Users/gege/Downloads/PLoS_Curr")
 # dictionary = scan("/Users/gege/Dropbox/graduate/DataScience/project/Data/words.txt", character(), quote = "")
-load("data.RData")
 file = VCorpus(dsource, readerControl = list(reader = readPlain)) 
 origfile = file
 ```
@@ -246,7 +246,7 @@ newstopword = c(newstopword, othersw)
 
 Word in file count
 
-```{r, eval=FALSE}
+```{r}
 filefreq = f_word %>%
   group_by(id) %>%
   count(word) %>%
