@@ -46,31 +46,35 @@ Topics are set to be 3 to 10. The likelihood can be calculated to determine the 
 The total count shows below with sixteen common statistical methods. To make the time trend more clearly, we choose the methods with more than one thousand count. The time trends stay similar when using raw count and normalized probability of each method. 
 
 ```{r, echo = FALSE}
+install.packages()
+library("ggpubr")
 load("/Users/gege/Desktop/plot_total.RData")
 library("ggplot2")
 s = s2
-p = ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2, fill = reorder(dic2, -s2))) + geom_bar(stat="identity")
-p + coord_flip() + labs(x = "count in paper", y = "statistical topics", fill = "statistical topics") + geom_text(aes(label = s2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) 
-```
+p = ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2)) + geom_bar(stat="identity")
+p1 = p + coord_flip() + labs(title="a.", x = "count in paper 2007 - 2016", y = "statistical methods", fill = "statistical methods") + geom_text(aes(label = s2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 2000) + guides(fill=FALSE)
+# Total count of statistical methods
 
-```{r, echo = FALSE}
 name_list = as.character(df[df$s2 >= 1000, 1])
 plot_year = count_year[,colnames(count_year) %in% name_list]
 date = 2007:2016
 ggyear = function(i) {
-  out = paste("+ geom_line(aes(y = plot_year[,", i, "],colour = name_list[",  i, "]))", sep = "")
+  out = paste("+ geom_line(aes(y = plot_year[,", i, "],colour = colnames(plot_year)[",  i, "]), size = 1.2)", sep = "")
   return(out)
 }
-eval(parse(text = paste("ggplot(data=plot_year, aes(date))", paste((sapply(1:10, ggyear)), collapse = "")))) + labs(title="Year count for count > 1000", x ="Time", y = "Count", colour = "Statistical method")
+p2 = eval(parse(text = paste("ggplot(data=plot_year, aes(date))", paste((sapply(1:10, ggyear)), collapse = "")))) + labs(title="b.", x ="Time (year)", y = "Count", colour = "Statistical method")
+# Time trend of year count
 
- 
-
-plot_year_prob = sweep(plot_year,2,colSums(plot_year), "/")
-ggyear_prob = function(i) {
-  out = paste("+ geom_line(aes(y = plot_year_prob[,", i, "],colour = name_list[",  i, "]))", sep = "")
+# normalizing by count every year
+plot_year_norm = sweep(plot_year,1,rowSums(plot_year), "/")
+ggyear_norm = function(i) {
+  out = paste("+ geom_line(aes(y = plot_year_norm[,", i, "],colour = colnames(plot_year_norm)[",  i, "]), size = 1.2)", sep = "")
   return(out)
 }
-eval(parse(text = paste("ggplot(data=plot_year_prob, aes(date))", paste((sapply(1:10, ggyear_prob)), collapse = "")))) + labs(title="Year count probability for count > 1000", x ="Time", y = "Probability in year", colour = "Statistical method")
+p3 = eval(parse(text = paste("ggplot(data=plot_year_norm, aes(date))", paste((sapply(1:10, ggyear_norm)), collapse = "")))) + labs(title="c.", x ="Time (year)", y = "Proportion in year", colour = "Statistical method")
+# Time trend of normalized year count
+plot1 = ggarrange(p1, p2, p3, ncol = 3, nrow = 1)
+ggsave("/Users/gege/Desktop/p1.pdf", plot1, width = 15, height = 3)
 ```
 
 From the barplots we observe that the most common statistical methods are principal component analysis, independent component analysis and clustering. Each of them has more than 9000 count. Ridge regression, MCMC and Lasso are mentioned little, with around or less than 100 count for each. 
@@ -107,3 +111,22 @@ We need to conduct analysis by fields besides time trend.
 The number of frequent words can be adjusted by the total number of unique words in the model. We need to consider whether to obtain these words by the full text files or only the method part. 
 
 As not all papers are statistics papers, the topics are possibly to be field specific, but the modeling procedure is intriguing. 
+
+
+Citation
+
+Scott Chamberlain, Carl Boettiger and Karthik Ram (2016). rplos: Interface to the Search 'API' for 'PLoS' Journals. R package version 0.6.4. https://CRAN.R-project.org/package=rplos
+
+Hadley Wickham (2017). stringr: Simple, Consistent Wrappers for Common String Operations. R package version 1.2.0. https://CRAN.R-project.org/package=stringr
+
+H. Wickham. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York, 2009.
+
+Ingo Feinerer and Kurt Hornik (2017). tm: Text Mining Package. R package version 0.7-1. https://CRAN.R-project.org/package=tm
+ 
+Ingo Feinerer, Kurt Hornik, and David Meyer (2008). Text Mining Infrastructure in R. Journal of Statistical Software 25(5): 1-54. URL: http://www.jstatsoft.org/v25/i05/.
+
+tidytext: Text Mining and Analysis Using Tidy Data Principles in R.” _JOSS_, *1*(3). doi: 10.21105/joss.00037 (URL: http://doi.org/10.21105/joss.00037), <URL: http://dx.doi.org/10.21105/joss.00037>.
+
+Hadley Wickham, Romain Francois, Lionel Henry and Kirill Müller (2017). dplyr: A Grammar of Data Manipulation. R package version 0.7.4. https://CRAN.R-project.org/package=dplyr
+
+Grün B and Hornik K (2011). “topicmodels: An R Package for Fitting Topic Models.” _Journal of Statistical Software_, *40*(13), pp. 1-30. doi: 10.18637/jss.v040.i13 (URL: http://doi.org/10.18637/jss.v040.i13). 

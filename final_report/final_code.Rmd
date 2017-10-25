@@ -1,10 +1,9 @@
 ---
-title: "code clean"
+title: "final code"
 author: "Gege Gui"
 ---
 
 ```{r}
-# install.packages("rplos")
 install.packages("devtools")
 devtools::install_github("ropensci/rplos")
 install.packages("stringr")
@@ -23,7 +22,6 @@ library("tm")
 library("tidytext")
 library("dplyr")
 library("topicmodels")
-# load("/Users/gege/Desktop/cleandata.RData")
 ```
 
 ## PLoS R package
@@ -33,7 +31,6 @@ library("topicmodels")
 id = searchplos("abstract:statistics", fl='id, publication_date', fq='doc_type:full', sort = 'publication_date desc', start=0)
 
 dic = c("linear regression","Lasso","ridge regression","linear discriminant analysis","bootstrap","maximum likelihood","MCMC","neural network","support vector machine","clustering","principal component","independent component","random forest","graphical model", "Kaplan", "Cox proportional")
-# "EM algorithm",
 
 l = list()
 for (i in 1:length(dic)){
@@ -106,7 +103,6 @@ df = data.frame(dic2, s2)
 
 p = ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2)) + geom_bar(stat="identity")
 p + coord_flip() + labs(x = "count in paper 2007 - 2016", y = "statistical methods", fill = "statistical methods") + geom_text(aes(label = s2), size = 3,  hjust = -0.5, position = position_dodge(width = 1)) + ylim(0, max(s) + 1000) + guides(fill=FALSE)
-# ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2, fill = reorder(dic2, -s2)))
 ```
 
 Plot trend over time
@@ -165,7 +161,7 @@ eval(parse(text = paste("ggplot(data=plot_month_prob, aes(date_m))", paste((sapp
 
 Remove the mostly used method
 
-```{r, eval=FALSE}
+```{r}
 ggyear_norm = function(i) {
   out = paste("+ geom_line(aes(y = plot_year_norm[,", i, "],colour = colnames(plot_year_norm)[",  i, "]), size = 1.2)", sep = "")
   return(out)
@@ -188,9 +184,6 @@ ggmonth_norm = function(i) {
   return(out)
 }
 eval(parse(text = paste("ggplot(data=plot_month_norm, aes(date_m))", paste((sapply(1:10, ggmonth_norm)), collapse = "")))) + labs(title="Month count probability for count > 1000", x ="Time", y = "Probability in month", colour = "Statistical methods")
-
-# remove linear regression
-
 ```
 
 
@@ -242,13 +235,6 @@ newstopword = union(setdiff(wholevol, antistopword), word_freq)
 new_stop = as.data.frame(t(newstopword))
 colnames(new_stop) = "word"
 f_word = anti_join(as.data.frame(fileunnest), new_stop)
-```
-
-```{r}
-# tword = unique(f_word[,2])
-# ttext = unique(f_word[,1])
-# test = table(f_word[,1], f_word[,2])
-# t = as.data.frame.matrix(test)
 ```
 
 Some stopwords from model fitting
@@ -303,7 +289,6 @@ method_file = getmethod(file)
 ```
 
 ```{r}
-#t_file = DocumentTermMatrix(tfile, control = list(removePunctuation = TRUE, removeNumbers = TRUE, stemming = TRUE, stopwords = c(stopwords("english"), newstopword))) 
 t_file = DocumentTermMatrix(method_file, control = list(removePunctuation = TRUE, wordLengths = c(3, 19),  removeNumbers = TRUE, stopwords = c(stopwords("english"), newstopword))) 
 # stemming = TRUE,
 
@@ -332,9 +317,6 @@ for (i in 1:nrow(term)){
 
 to = apply(article, 1, which.max)
 to.prob = apply(article, 1, max)
-
-# start from 308 no date
-# statisticle method
 ```
 
 ```{r}
@@ -362,14 +344,7 @@ for (i in 1:length(fileind)){
   }
   b[[i]] = b[[i]][2:length(b[[i]])]
 }
-# save.image(file = "/Users/gege/Desktop/total.RData")
 ```
-
-laboratory science (animal, days, muscle, testing, statistical, control, genotype, compared)
-community survey (community, local, survey, government, district)
-natural disaster (mortality, earthquake, injuries, hurricane, disasters)
-infectious disease (outbreak, transmission, virus, epidemic, incidence, incubated, rate)
-population network(individual, interview, population, network, trees, household)
 
 ```{r}
 filetopic = to[fileind]
@@ -398,9 +373,5 @@ for (i in 1:topic){
 
 pl = ggplot(data = topic_method, aes(x= topic, y=count, fill = method)) + geom_bar(stat="identity")
 plotp1 = pl + labs(x = "5 topics", y = "statistical method count", fill = "statistical methods") 
-# ggplot(data=df, aes(x= reorder(dic2, -s2), y=s2, fill = reorder(dic2, -s2)))
 plotp1
-# ggsave("/Users/gege/Desktop/p2.pdf", plotp1, width = 8, height = 3)
 ```
-
-not enough paper and the word dictionary. might not use any statistical word
